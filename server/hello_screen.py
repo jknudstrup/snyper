@@ -1,12 +1,14 @@
-import hardware_setup as hardware_setup # Create a display instance
+import server.display.hardware_setup as hardware_setup # Create a display instance
 from gui.core.ugui import Screen, ssd
 
 from gui.widgets import Label, Button, CloseButton
 # from gui.core.writer import Writer  # Monochrome display
 from gui.core.writer import CWriter
 # Font for CWriter or Writer
-import gui.fonts.arial10 as arial10
+# import gui.fonts.arial10 as font
+import gui.fonts.arial35 as font
 from gui.core.colors import *
+
 
 
 class BaseScreen(Screen):
@@ -18,7 +20,7 @@ class BaseScreen(Screen):
 
         super().__init__()
         # wri = Writer(ssd, arial10, verbose=False)  # Monochrome display
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
 
         col = 2
         row = 2
