@@ -1,31 +1,40 @@
 import network
 import time
-from .micropyserver import MicroPyServer
+from server.microserver.micropyserver import MicroPyServer
+from server.microserver import utils
 
-def start_server(ssid="PICO_AP", password="micropython123"):
-    ap = network.WLAN(network.AP_IF)
-    ap.active(True)
-    ap.config(essid=ssid, password=password)
 
-    while not ap.active():
-        time.sleep(0.1)
-
-    print(f"AP up at {ap.ifconfig()[0]}")
-
+def test_server():
     server = MicroPyServer()
 
+
     def index(request):
-        server.send("HTTP/1.0 200 OK\r\n")
-        server.send("Content-Type: text/html\r\n\r\n")
-        server.send("<h1>Hello, World!</h1>")
+        server.send('OK')
 
-    def hello(request):
-        server.send("HTTP/1.0 200 OK\r\n")
-        server.send("Content-Type: text/plain\r\n\r\n")
-        server.send("Hello from the other side!")
+    def hello_world(request):
+        ''' request handler '''
+        server.send("HELLO WORLD!")
 
-    server.add_route('/', index)
-    server.add_route('/hello', hello)
+
+    def stop(request):
+        server.stop()
+
+
+    def set_cookies(request):
+        cookies_header = utils.create_cookie("name", "value", expires="Sat, 01-Jan-2030 00:00:00 GMT")
+        utils.send_response(server, "OK", extend_headers=[cookies_header])
+
+
+    def get_cookies(request):
+        cookies = utils.get_cookies(request)
+        utils.send_response(server, str(cookies))
+
+
+    server.add_route("/", index)
+    server.add_route("/hello", hello_world)
+    server.add_route("/stop", stop)
+    server.add_route("/set_cookies", set_cookies)
+    server.add_route("/get_cookies", get_cookies)
 
     server.start()
-
+    

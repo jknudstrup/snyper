@@ -1,41 +1,69 @@
 import network
 import time
-import socket
+import urequests
 
 class ClientHTTP:
-    def __init__(self, ssid="PICO_AP", password="micropython123"):
+    def __init__(self, ssid, password, server_ip):
         self.ssid = ssid
         self.password = password
-        self.server_ip = "192.168.4.1"
-        self.wlan = network.WLAN(network.STA_IF)
+        self.server_ip = server_ip
 
-    def connect_wifi(self):
-        self.wlan.active(True)
-        if not self.wlan.isconnected():
-            print(f"Connecting to network {self.ssid}...")
-            self.wlan.connect(self.ssid, self.password)
-            while not self.wlan.isconnected():
+    def reset_network_interface(self):
+        """Properly reset the network interface to handle soft resets"""
+        wlan = network.WLAN(network.STA_IF)
+        if wlan.active():
+            try:
+                wlan.disconnect()
+                time.sleep(0.5)
+            except:
+                pass
+            try:
+                wlan.active(False)
                 time.sleep(1)
-        print("Connected to Wi-Fi")
-        print(f"IP Address: {self.wlan.ifconfig()[0]}")
-
-    def send_test_message(self):
-        time.sleep(5) # Give server time to start
-        addr = socket.getaddrinfo(self.server_ip, 80)[0][-1]
-        s = socket.socket()
-        s.connect(addr)
-        print(f"Sending GET request to http://{self.server_ip}/hello")
-        s.send(b"GET /hello HTTP/1.0\r\n\r\n")
-        data = s.recv(1000)
-        print("Response from server:")
-        print(data.decode())
-        s.close()
+            except:
+                pass
+        try:
+            ap = network.WLAN(network.AP_IF)
+            if ap.active():
+                ap.active(False)
+                time.sleep(0.5)
+        except:
+            pass
+        print("Network interfaces reset")
+        return wlan
 
     def start(self):
-        self.connect_wifi()
-        self.send_test_message()
+        # wlan = network.WLAN(network.STA_IF)
+        wlan = self.reset_network_interface()
+        wlan.active(True)
+        time.sleep(1)
+        
+        print(f'Connecting to {self.ssid}...')
+        wlan.connect(self.ssid, self.password)
+        
+        max_wait = 20
+        wait_count = 0
+        while not wlan.isconnected() and wait_count < max_wait:
+            if wlan.status() < 0:
+                print(f"Wi-Fi connection failed with status: {wlan.status()}")
+                raise RuntimeError("Wi-Fi connection failed")
+            print(f"Waiting for connection... ({wait_count}/{max_wait})")
+            time.sleep(1)
+            wait_count += 1
+            
+        if not wlan.isconnected():
+            raise RuntimeError("Wi-Fi connection timeout")
+            
+        print(f'Connected to {self.ssid}')
+        print(f'IP: {wlan.ifconfig()[0]}')
 
-def start_client():
-    print("Running HTTP client")
-    client = ClientHTTP()
-    client.start()
+        # url = f"http://{self.server_ip}/hello"
+        url = f"http://{self.server_ip}/"
+        try:
+            print(f"Sending GET request to {url}")
+            response = urequests.get(url)
+            print("Response from server:")
+            print(response.text)
+            response.close()
+        except Exception as e:
+            print(f"Failed to send message: {e}")

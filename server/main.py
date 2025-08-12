@@ -1,15 +1,17 @@
-# from server import Server
-# from screen_demo import run_screen_demo
-# from screen_setup import *
-# from hello_screen import test
-# import gui.demos.simple
-# from server.server_test import *
-from server.server_test import start_server
+# from server.server_http import ServerHTTP
 
-start_server()
+# def start():
+#     server = ServerHTTP()
+#     server.start()
 
-# test()
-# server = Server()
-# server.start()
-# run_screen_demo()
-    
+# start()
+from config import config
+from server.ap import start_ap
+from server.server_test import test_server
+
+ssid = config.get("ssid")
+password = config.get("password")
+
+start_ap(ssid, password)
+test_server()
+
