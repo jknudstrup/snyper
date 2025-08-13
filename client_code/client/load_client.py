@@ -1,26 +1,127 @@
-# client.py - Client module for Raspberry Pi Pico W
+# client.py - Bidirectional Client module for Raspberry Pi Pico W
 import network
 import urequests
 import time
 import ujson
+import _thread
+from client.microdot import Microdot
 
 class PicoClient:
-    def __init__(self, ssid="PicoServer", password="picopass123", 
-                 server_ip="192.168.4.1", server_port=80):
+    def __init__(self, client_id="pico_client", ssid="PicoServer", password="picopass123", 
+                 server_ip="192.168.4.1", server_port=80, client_port=8080):
         """Initialize the Pico client
         
         Args:
+            client_id (str): Unique identifier for this client
             ssid (str): WiFi network name to connect to
             password (str): WiFi network password
             server_ip (str): Server IP address
             server_port (int): Server port number
+            client_port (int): Port for this client's mini-server
         """
+        self.client_id = client_id
         self.ssid = ssid
         self.password = password
         self.server_ip = server_ip
         self.server_port = server_port
+        self.client_port = client_port
         self.wlan = None
         self.connected = False
+        self.registered = False
+        
+        # Mini-server for receiving commands
+        self.app = Microdot()
+        self.server_thread = None
+        self.server_running = False
+        
+        # Set up client routes
+        self._setup_routes()
+    
+    def _setup_routes(self):
+        """Set up routes for the client's mini-server"""
+        
+        @self.app.route('/')
+        def client_info(request):
+            """Client info endpoint"""
+            return {
+                "client_id": self.client_id,
+                "status": "online",
+                "server_connected": self.connected,
+                "registered": self.registered,
+                "available_endpoints": ["/", "/execute", "/ping"]
+            }
+        
+        @self.app.route('/execute', methods=['POST'])
+        def execute_command(request):
+            """Execute a command sent from the server"""
+            try:
+                data = request.json
+                if not data:
+                    return {"error": "No JSON data provided"}, 400
+                
+                command = data.get('command')
+                sender = data.get('sender', 'unknown')
+                
+                if not command:
+                    return {"error": "No command provided"}, 400
+                
+                print(f"\n>>> Received command from {sender}: {command}")
+                
+                # Execute the command safely
+                result = self._safe_execute(command)
+                
+                response = {
+                    "client_id": self.client_id,
+                    "command": command,
+                    "executed": True,
+                    "result": result,
+                    "timestamp": time.time()
+                }
+                
+                print(f">>> Command executed successfully")
+                return response
+                
+            except Exception as e:
+                print(f"Command execution error: {e}")
+                return {
+                    "client_id": self.client_id,
+                    "executed": False,
+                    "error": str(e)
+                }, 500
+        
+        @self.app.route('/ping')
+        def ping(request):
+            """Simple ping endpoint"""
+            return {
+                "client_id": self.client_id,
+                "message": "pong",
+                "timestamp": time.time()
+            }
+    
+    def _safe_execute(self, command):
+        """Safely execute a Python command
+        
+        Args:
+            command (str): Python command to execute
+            
+        Returns:
+            str: Result of execution or error message
+        """
+        try:
+            # For safety, we'll restrict to simple print statements and basic operations
+            if command.startswith('print('):
+                # Execute print statements directly
+                exec(command)
+                return "Print command executed"
+            elif '=' in command and not any(danger in command for danger in ['import', 'exec', 'eval', '__']):
+                # Allow simple variable assignments
+                exec(command)
+                return "Assignment executed"
+            else:
+                # For other commands, just show what would be executed
+                return f"Command received (not executed for safety): {command}"
+        except Exception as e:
+            return f"Execution error: {e}"
     
     def connect_to_wifi(self, timeout=10):
         """Connect to the server's WiFi access point
@@ -91,12 +192,13 @@ class PicoClient:
             self.connected = False
             print("Disconnected from WiFi")
     
-    def _make_request(self, endpoint, method="GET"):
+    def _make_request(self, endpoint, method="GET", data=None):
         """Make HTTP request to server
         
         Args:
             endpoint (str): API endpoint (e.g., "/hello")
             method (str): HTTP method
+            data (dict): Data for POST requests
             
         Returns:
             dict: Response data or None if failed
@@ -112,6 +214,9 @@ class PicoClient:
             
             if method.upper() == "GET":
                 response = urequests.get(url)
+            elif method.upper() == "POST":
+                headers = {'Content-Type': 'application/json'}
+                response = urequests.post(url, json=data, headers=headers)
             else:
                 print(f"HTTP method {method} not implemented")
                 return None
@@ -138,6 +243,49 @@ class PicoClient:
         except Exception as e:
             print(f"Request failed: {e}")
             return None
+    
+    def register_with_server(self):
+        """Register this client with the server
+        
+        Returns:
+            bool: True if registration successful, False otherwise
+        """
+        registration_data = {
+            "client_id": self.client_id,
+            "port": self.client_port
+        }
+        
+        result = self._make_request("/register", "POST", registration_data)
+        
+        if result and "message" in result:
+            print(f"✓ Successfully registered with server: {result['message']}")
+            self.registered = True
+            return True
+        else:
+            print("✗ Failed to register with server")
+            self.registered = False
+            return False
+    
+    def start_mini_server(self):
+        """Start the client's mini-server in a separate thread"""
+        def server_thread():
+            try:
+                print(f"Starting client mini-server on port {self.client_port}...")
+                self.server_running = True
+                self.app.run(host='0.0.0.0', port=self.client_port, debug=False)
+            except Exception as e:
+                print(f"Mini-server error: {e}")
+            finally:
+                self.server_running = False
+        
+        try:
+            self.server_thread = _thread.start_new_thread(server_thread, ())
+            time.sleep(1)  # Give the server time to start
+            print(f"✓ Mini-server started on port {self.client_port}")
+            return True
+        except Exception as e:
+            print(f"Failed to start mini-server: {e}")
+            return False
     
     def test_connectivity(self):
         """Test basic connectivity to server
@@ -184,75 +332,72 @@ class PicoClient:
             print("✗ Hello request failed")
             return None
     
-    def get_server_status(self):
-        """Get server status information
+    def run_full_setup(self):
+        """Run the complete client setup process
         
         Returns:
-            dict: Server status data or None if failed
+            bool: True if all setup steps successful, False otherwise
         """
-        print("Getting server status...")
-        return self._make_request("/status")
-    
-    def run_basic_test(self):
-        """Run a basic client test sequence
+        print(f"Starting Bidirectional Pico W Client: {self.client_id}")
+        print("="*50)
         
-        Returns:
-            bool: True if all tests passed, False otherwise
-        """
-        print("Starting Pico W Client Test...")
-        
-        # Connect to WiFi
+        # Step 1: Connect to WiFi
         if not self.connect_to_wifi():
             print("Cannot proceed without WiFi connection")
             return False
         
-        # Wait a bit for everything to settle
         time.sleep(2)
         
-        success = True
+        # Step 2: Start mini-server
+        if not self.start_mini_server():
+            print("Cannot proceed without mini-server")
+            return False
         
-        # Test basic connectivity
+        time.sleep(2)
+        
+        # Step 3: Test connectivity to main server
         if not self.test_connectivity():
-            print("Cannot reach server - check if server is running")
-            success = False
-        else:
-            # Send hello request
-            hello_response = self.send_hello_request()
-            if not hello_response:
-                success = False
-            
-            # Get server status
-            status_response = self.get_server_status()
-            if status_response:
-                print(f"\nServer status: {status_response.get('status', 'unknown')}")
+            print("Cannot reach main server")
+            return False
         
-        if success:
-            print("\n✓ All client tests completed successfully!")
-        else:
-            print("\n✗ Some client tests failed")
+        # Step 4: Register with main server
+        if not self.register_with_server():
+            print("Failed to register with server")
+            return False
         
-        return success
+        # Step 5: Send hello request
+        self.send_hello_request()
+        
+        print(f"\n✓ Client {self.client_id} is fully operational!")
+        print(f"✓ Mini-server running on port {self.client_port}")
+        print(f"✓ Registered with main server")
+        print(f"✓ Ready to receive commands from server")
+        
+        return True
 
 # Convenience function for simple usage
-def create_client(ssid="PicoServer", password="picopass123", 
-                  server_ip="192.168.4.1", server_port=80):
+def create_client(client_id="pico_client", ssid="PicoServer", password="picopass123", 
+                  server_ip="192.168.4.1", server_port=80, client_port=8080):
     """Create and return a configured PicoClient instance
     
     Args:
+        client_id (str): Unique identifier for this client
         ssid (str): WiFi network name to connect to
         password (str): WiFi network password  
         server_ip (str): Server IP address
         server_port (int): Server port number
+        client_port (int): Port for client's mini-server
     
     Returns:
         PicoClient: Configured client instance
     """
-    return PicoClient(ssid, password, server_ip, server_port)
+    return PicoClient(client_id, ssid, password, server_ip, server_port, client_port)
 
 # Default configuration
 DEFAULT_CONFIG = {
     'ssid': 'PicoServer',
     'password': 'picopass123',
     'server_ip': '192.168.4.1',
-    'server_port': 80
+    'server_port': 80,
+    'client_port': 8080
 }

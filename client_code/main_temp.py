@@ -64,3 +64,51 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # Create client with default configuration
+    # These should match your server settings:
+    client = create_client(
+        ssid=DEFAULT_CONFIG['ssid'],           # "PicoServer"
+        password=DEFAULT_CONFIG['password'],   # "picopass123"
+        server_ip=DEFAULT_CONFIG['server_ip'], # "192.168.4.1"
+        server_port=DEFAULT_CONFIG['server_port'] # 80
+    )
+    
+    # Alternative: Create with custom settings
+    # client = create_client(
+    #     ssid="MyCustomPico",
+    #     password="mypassword123", 
+    #     server_ip="192.168.4.1",
+    #     server_port=8080
+    # )
+    
+    try:
+        # Run the basic test sequence
+        success = client.run_basic_test()
+        
+        if success:
+            print("\n" + "="*50)
+            print("You can also use the client manually:")
+            print("  client.connect_to_wifi()")
+            print("  client.send_hello_request()")
+            print("  client.get_server_status()")
+            print("  client.disconnect()")
+            
+            # Example of manual usage:
+            # if not client.connected:
+            #     client.connect_to_wifi()
+            # 
+            # # Send multiple requests
+            # for i in range(3):
+            #     print(f"\n--- Request {i+1} ---")
+            #     client.send_hello_request()
+            #     time.sleep(2)
+        
+    except Exception as e:
+        print(f"Client error: {e}")
+    finally:
+        # Clean up
+        client.disconnect()
+        print("\nClient finished")
+
+if __name__ == "__main__":
+    main()
