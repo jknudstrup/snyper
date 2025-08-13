@@ -4,6 +4,8 @@ class Config:
     def __init__(self):
         with open("config.json") as f:
             self.config = json.load(f)
+            print("Loaded config.json")
+            print(self.config)
         
     def get(self, key):
         return self.config[key]

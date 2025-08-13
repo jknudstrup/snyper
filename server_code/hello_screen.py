@@ -31,8 +31,6 @@ class BaseScreen(Screen):
         Button(wri, row, col, text='No', callback=my_callback, args=('No',))
         CloseButton(wri)  # Quit the application
 
-def test():
+def demo_screen():
     print('Simple demo: button presses print to REPL.')
     Screen.change(BaseScreen)  # A class is passed here, not an instance.
-
-# test()
