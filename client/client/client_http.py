@@ -57,8 +57,8 @@ class ClientHTTP:
         print(f'Connected to {self.ssid}')
         print(f'IP: {wlan.ifconfig()[0]}')
 
-        # url = f"http://{self.server_ip}/hello"
-        url = f"http://{self.server_ip}/"
+        url = f"http://{self.server_ip}/hello"
+        # url = f"http://{self.server_ip}/"
         try:
             print(f"Sending GET request to {url}")
             response = urequests.get(url)
