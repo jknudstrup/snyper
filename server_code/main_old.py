@@ -1,7 +1,7 @@
 # main.py - Server main file with GUI integration
 # Save this as main.py on your SERVER Pico W
 
-from server.load_server import create_server, DEFAULT_CONFIG
+from server_temp.load_server import create_server, DEFAULT_CONFIG
 import _thread
 import time
 
