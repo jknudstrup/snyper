@@ -1,97 +1,108 @@
 import asyncio
 from server import WebServer
-from display import start_display, test_display
+from display import start_display
+from events import event_bus, emit_event, subscribe_to_event, EventTypes
 
 class GameState:
-    """Shared game state - the heart of Hulkamania!"""
+    """Shared game state - the backbone of our operation!"""
     def __init__(self):
         self.score = 0
         self.active_targets = []
         self.connected_clients = set()
         self.game_running = False
+        # Reference to our central command - ensuring unified communications
+        self.event_bus = event_bus
 
 # Global game state that gets shared between all components
 game_state = GameState()
 
-async def display_task():
-    """Task to manage the ST7789 display - whatcha gonna do when this display runs wild on you!"""
-    print("🎪 Display task starting, brother!")
-    last_score = -1  # Track changes to reduce spam
-    last_target_count = -1
-    
-    while True:
-        # Only print when something actually changes - no more spam, dude!
-        current_score = game_state.score
-        current_targets = len(game_state.active_targets)
-        
-        if current_score != last_score or current_targets != last_target_count:
-            print(f"📺 Display update: Score={current_score}, Active targets={current_targets}")
-            last_score = current_score
-            last_target_count = current_targets
-        
-        # This is where you'd update your ST7789 display
-        # Slower refresh rate - displays don't need crazy updates
-        await asyncio.sleep(2.0)
-
 async def game_loop_task():
-    """Main game logic - the heart and soul of Hulkamania!"""
-    print("🎯 Game loop starting, dude!")
+    """Main game logic - our strategic command centre!"""
+    print("🎯 Game loop starting, old chap!")
+    
+    # Subscribe to events that affect game logic
+    subscribe_to_event(EventTypes.GAME_STARTED, handle_game_start, "game_loop")
+    subscribe_to_event(EventTypes.GAME_STOPPED, handle_game_stop, "game_loop") 
+    subscribe_to_event(EventTypes.TARGET_HIT, handle_target_hit, "game_loop")
     
     while True:
         if game_state.game_running:
             # This is where your game logic goes
-            print("🎮 Game tick - checking targets, updating score...")
+            print("🎮 Game tick - maintaining operational readiness...")
             
             # Example: Pop up a target every 3 seconds during game
             if len(game_state.active_targets) < 3:  # Max 3 targets
                 target_id = f"target_{len(game_state.active_targets)}"
                 game_state.active_targets.append(target_id)
-                print(f"🎯 Target {target_id} popped up!")
+                print(f"🎯 Target {target_id} deployed!")
+                
+                # Broadcast intelligence about new target
+                await emit_event(EventTypes.TARGET_SPAWNED, "game_loop", 
+                               target_id=target_id, position=len(game_state.active_targets))
         
-        await asyncio.sleep(1.0)  # Game tick rate
+        await asyncio.sleep(1.0)  # Strategic pause between operations
+
+# Event handlers for game loop - our intelligence officers
+async def handle_game_start(event):
+    """Respond to game start orders"""
+    print("🚀 Game loop received START command!")
+    game_state.game_running = True
+
+async def handle_game_stop(event):
+    """Respond to game stop orders"""
+    print("🛑 Game loop received STOP command!")
+    game_state.game_running = False
+
+async def handle_target_hit(event):
+    """Process target elimination reports"""
+    target_id = event.data.get('target_id')
+    if target_id and target_id in game_state.active_targets:
+        game_state.active_targets.remove(target_id)
+        old_score = game_state.score
+        game_state.score += 10
+        print(f"💥 Target {target_id} eliminated! Score: {old_score} -> {game_state.score}")
+        
+        # Broadcast score change intelligence
+        await emit_event(EventTypes.SCORE_CHANGED, "game_loop",
+                        old_score=old_score, new_score=game_state.score, target_id=target_id)
 
 async def web_server_task():
-    """Initialize and run the web server - this is where the magic happens, dude!"""
+    """Initialize and run the web server - our communications headquarters!"""
     web_server = WebServer(game_state)  # Pass the shared state
     await web_server.start_server(debug=True)  # Uses config values now!
 
 async def main():
-    """Main function that runs all tasks concurrently - the ultimate tag team match!"""
-    print("🎪 Carnival Shooter Server starting up - BROTHER!")
+    """Main function that coordinates all operations - our supreme command centre!"""
+    print("🎪 Carnival Shooter Server deploying forces - FOR KING AND COUNTRY!")
     
-    # Create all tasks - this is your wrestling stable!
+    # Deploy the display unit first, synchronously, as per operational doctrine
+    start_display()
+    
+    # Deploy our async task forces - the backbone of operations!
     tasks = [
-        asyncio.create_task(start_display()),
         asyncio.create_task(game_loop_task()),
         asyncio.create_task(web_server_task())
     ]
     
     try:
-        # Run all tasks concurrently - let the chaos begin!
+        # Run all operations concurrently - coordinated strategic deployment!
         await asyncio.gather(*tasks)
     except KeyboardInterrupt:
-        print("\n🛑 Shutting down - until next time, Hulkamaniacs!")
+        print("\n🛑 Shutting down operations - God save the King!")
     except Exception as e:
-        print(f"\n💥 Unexpected error, brother: {e}")
+        print(f"\n💥 Unexpected tactical situation: {e}")
     finally:
-        # Clean shutdown - make sure we can get out of this ring!
-        print("🔧 Cleaning up tasks...")
+        # Strategic withdrawal - proper military order maintained!
+        print("🔧 Organizing tactical withdrawal...")
         for task in tasks:
             if not task.done():
                 task.cancel()
                 try:
                     await task
                 except asyncio.CancelledError:
-                    pass  # Expected when cancelling
-        print("✅ All tasks cleaned up - see ya later, Hulkamaniacs!")
+                    pass  # Expected during withdrawal
+        print("✅ All forces withdrawn successfully - mission accomplished!")
 
 if __name__ == "__main__":
-    # Let's get this party started, brother!
-    
-    # UNCOMMENT ONE OF THESE TO CHOOSE WHAT TO RUN:
-    
-    # Run the full game with all tasks:
+    # Deploy all forces for the main operation!
     asyncio.run(main())
-    
-    # OR run just the display test:
-    # asyncio.run(test_display_only())
