@@ -1,5 +1,18 @@
 from microdot import Microdot, Response
 import json
+import network
+import time
+from config import config
+
+def start_ap(ssid, password):
+    ap = network.WLAN(network.AP_IF)
+    ap.active(True)
+    ap.config(essid=ssid, password=password)
+
+    while not ap.active():
+        time.sleep(0.1)
+
+    print(f"AP {ssid} up at {ap.ifconfig()[0]}")
 
 class WebServer:
     """Web server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
@@ -75,9 +88,12 @@ class WebServer:
 
     async def start_server(self, host='0.0.0.0', port=80, debug=True):
         """Start the web server - this is where the magic happens, dude!"""
-        print(f"🌐 Web server starting on {host}:{port} - whatcha gonna do!")
+        print(f"🌐 Setting up WiFi AP: {config.ssid}")
+        start_ap(config.ssid, config.password)
+        
+        print(f"🌐 Web server starting on {config.server_ip}:{config.port} - whatcha gonna do!")
         try:
-            await self.app.start_server(host=host, port=port, debug=debug)
+            await self.app.start_server(host=config.server_ip, port=config.port, debug=debug)
         except KeyboardInterrupt:
             print("🛑 Web server received shutdown signal!")
             raise  # Re-raise so main() can handle it

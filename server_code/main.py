@@ -1,5 +1,6 @@
 import asyncio
 from server import WebServer
+from display import start_display, test_display
 
 class GameState:
     """Shared game state - the heart of Hulkamania!"""
@@ -52,7 +53,7 @@ async def game_loop_task():
 async def web_server_task():
     """Initialize and run the web server - this is where the magic happens, dude!"""
     web_server = WebServer(game_state)  # Pass the shared state
-    await web_server.start_server(host='0.0.0.0', port=80, debug=True)
+    await web_server.start_server(debug=True)  # Uses config values now!
 
 async def main():
     """Main function that runs all tasks concurrently - the ultimate tag team match!"""
@@ -60,7 +61,7 @@ async def main():
     
     # Create all tasks - this is your wrestling stable!
     tasks = [
-        asyncio.create_task(display_task()),
+        asyncio.create_task(start_display()),
         asyncio.create_task(game_loop_task()),
         asyncio.create_task(web_server_task())
     ]
@@ -86,4 +87,11 @@ async def main():
 
 if __name__ == "__main__":
     # Let's get this party started, brother!
+    
+    # UNCOMMENT ONE OF THESE TO CHOOSE WHAT TO RUN:
+    
+    # Run the full game with all tasks:
     asyncio.run(main())
+    
+    # OR run just the display test:
+    # asyncio.run(test_display_only())
