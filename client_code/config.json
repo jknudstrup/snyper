@@ -2,5 +2,5 @@
     "ssid": "PICO_AP_2",
     "password": "micropython123",
     "server_ip": "192.168.4.1",
-    "port": 5000
+    "port": 80
 }
