@@ -1,5 +1,5 @@
 import asyncio
-from server import WebServer
+from master_server import MasterServer
 from display import start_display
 from events import event_bus, emit_event, subscribe_to_event, EventTypes
 
@@ -66,10 +66,10 @@ async def handle_target_hit(event):
         await emit_event(EventTypes.SCORE_CHANGED, "game_loop",
                         old_score=old_score, new_score=game_state.score, target_id=target_id)
 
-async def web_server_task():
-    """Initialize and run the web server - our communications headquarters!"""
-    web_server = WebServer(game_state)  # Pass the shared state
-    await web_server.start_server(debug=True)  # Uses config values now!
+async def master_server_task():
+    """Initialize and run the master server - our communications headquarters!"""
+    master_server = MasterServer(game_state)  # Pass the shared state
+    await master_server.start_server(debug=True)  # Uses config values now!
 
 async def run_master():
     """Main function that coordinates all operations - our supreme command centre!"""
@@ -81,7 +81,7 @@ async def run_master():
     # Deploy our async task forces - the backbone of operations!
     tasks = [
         asyncio.create_task(game_loop_task()),
-        asyncio.create_task(web_server_task())
+        asyncio.create_task(master_server_task())
     ]
     
     try:

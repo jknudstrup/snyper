@@ -14,8 +14,8 @@ def start_ap(ssid, password):
 
     print(f"AP {ssid} up at {ap.ifconfig()[0]}")
 
-class WebServer:
-    """Web server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
+class MasterServer:
+    """Master server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
     
     def __init__(self, game_state):
         self.app = Microdot()
@@ -87,16 +87,16 @@ class WebServer:
             return Response(json.dumps(response_data))
 
     async def start_server(self, host='0.0.0.0', port=80, debug=True):
-        """Start the web server - this is where the magic happens, dude!"""
+        """Start the master server - this is where the magic happens, dude!"""
         print(f"🌐 Setting up WiFi AP: {config.ssid}")
         start_ap(config.ssid, config.password)
         
-        print(f"🌐 Web server starting on {config.server_ip}:{config.port} - whatcha gonna do!")
+        print(f"🌐 Master server starting on {config.server_ip}:{config.port} - whatcha gonna do!")
         try:
             await self.app.start_server(host=config.server_ip, port=config.port, debug=debug)
         except KeyboardInterrupt:
-            print("🛑 Web server received shutdown signal!")
+            print("🛑 Master server received shutdown signal!")
             raise  # Re-raise so main() can handle it
         except Exception as e:
-            print(f"💥 Web server error: {e}")
+            print(f"💥 Master server error: {e}")
             raise

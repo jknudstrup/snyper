@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Snyper is a carnival-style target shooting game built for Raspberry Pi Pico W microcontrollers. The architecture consists of:
 
-- **Server (main device)**: Runs the game logic, manages WiFi AP, handles client communication, and drives an ST7789 display
-- **Clients (target devices)**: Connect to the server's WiFi network and manage individual targets
+- **Master (main device)**: Runs the game logic, manages WiFi AP, handles client communication, and drives an ST7789 display
+- **Target (target devices)**: Connect to the server's WiFi network and manage individual targets
 
 ## Development Commands
 
@@ -23,12 +23,13 @@ This is a MicroPython project targeting Raspberry Pi Pico W hardware. There are 
 The server runs three concurrent tasks orchestrated by `main.py`:
 
 1. **Game Loop** (`main.py:game_loop_task`): Manages game state, spawns targets, processes hits
-2. **Web Server** (`server.py`): HTTP API server using microdot library for client communication
+2. **Master Server** (`master_server.py`): HTTP API server using microdot library for client communication
 3. **Display System** (`display.py`): ST7789 LCD interface using micropython-micro-gui library
 
 ### Event System
 
 Central event bus (`events.py`) coordinates communication between components:
+
 - **EventBus**: Async publish/subscribe system for loose coupling
 - **EventTypes**: Standardized event constants (GAME_STARTED, TARGET_HIT, etc.)
 - **Event**: Data containers with type, source, and payload
@@ -36,6 +37,7 @@ Central event bus (`events.py`) coordinates communication between components:
 ### Configuration Management
 
 `config.py` provides centralized configuration with JSON file support:
+
 - Loads from `config.json` with fallback to defaults
 - Type-safe property accessors for network settings
 - Auto-saves default configuration if file missing
@@ -45,11 +47,11 @@ Central event bus (`events.py`) coordinates communication between components:
 ```
 device/
 ├── main.py              # Main orchestrator and game loop
-├── server.py            # HTTP server and WiFi AP management  
+├── master_server.py     # HTTP server and WiFi AP management
 ├── events.py            # Event bus system
 ├── display.py           # ST7789 display interface
 ├── config.py            # Configuration management
-├── hardware_setup.py    # Hardware pin configuration
+├── hardware_setup.py    # Display Hardware pin configuration
 ├── config.json          # Network and server settings
 ├── microdot/            # Embedded HTTP server library
 ├── gui/                 # Display GUI framework
