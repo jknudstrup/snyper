@@ -1,0 +1,4 @@
+{
+  "master": "/dev/tty.usbmodem11301",
+  "target": "/dev/tty.usbmodem11401"
+}
