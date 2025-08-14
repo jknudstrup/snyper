@@ -25,6 +25,7 @@ class Config:
     def _set_defaults(self):
         """Set default configuration values"""
         self.config = {
+            "node_id": "master",
             "ssid": "PICO_AP_DEFAULT",
             "password": "micropython123",
             "server_ip": "192.168.4.1",
