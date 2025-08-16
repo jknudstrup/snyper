@@ -35,11 +35,18 @@ class MasterServer:
 
         @self.app.route('/register', methods=['POST'])
         async def register_client(request):
-            """Register a new target client"""
+            """Register a new target client - NOW WITH IP TRACKING!"""
             client_data = request.json
             client_id = client_data.get('client_id', 'unknown')
+            client_ip = request.client_addr[0]  # GRAB THAT IP!
+            
+            # Store both ID and IP for lightning-fast pinging!
             self.game_state.connected_clients.add(client_id)
-            print(f"🤝 Client {client_id} connected - that's what I'm talking about!")
+            if not hasattr(self.game_state, 'target_ips'):
+                self.game_state.target_ips = {}
+            self.game_state.target_ips[client_id] = client_ip
+            
+            print(f"🤝 Client {client_id} at {client_ip} connected - LOCKED AND LOADED!")
             
             response_data = {"status": "registered", "client_id": client_id}
             return Response(json.dumps(response_data))

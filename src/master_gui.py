@@ -122,8 +122,8 @@ class MasterScreen(Screen):
             print(f"🎮 Button pressed: {arg}")
         
         def ping_targets_callback(button, arg):
-            """PING ALL THE TARGETS - RENTAL CAR STYLE!"""
-            print(f"🎯 PING button pressed - let's rock!")
+            """PING ALL THE TARGETS - LIGHTNING SPEED EDITION!"""
+            print(f"⚡ TURBO PING button pressed - PREPARE FOR SPEED!")
             self.ping_all_targets()
 
         super().__init__()
@@ -198,51 +198,50 @@ class MasterScreen(Screen):
             self.server_status.fgcolor = RED
     
     def ping_all_targets(self):
-        """Ping all connected targets - BEAT THAT ASS UP!"""
-        print("🚀 Starting target ping sequence...")
+        """Ping ONLY registered targets - LIGHTNING FAST!"""
+        print("⚡ TURBO PING SEQUENCE INITIATED!")
         self.ping_status.value("Pinging...")
         self.ping_status.fgcolor = YELLOW
         
-        alive_count = 0
-        total_targets = len(game_state.connected_clients)
-        
-        if total_targets == 0:
-            self.ping_status.value("No targets")
+        # Check if we have target IPs stored
+        if not hasattr(game_state, 'target_ips') or not game_state.target_ips:
+            self.ping_status.value("No IPs stored")
             self.ping_status.fgcolor = RED
+            print("💥 No target IPs stored - targets need to register first!")
             return
         
-        print(f"📡 Pinging {total_targets} connected targets...")
+        alive_count = 0
+        total_targets = len(game_state.target_ips)
         
-        # Try common DHCP IPs for targets (192.168.4.2-20)
-        for ip_suffix in range(2, 21):  # IPs 192.168.4.2 to 192.168.4.20
-            target_ip = f"192.168.4.{ip_suffix}"
+        print(f"🚀 Pinging {total_targets} registered targets - NO SCANNING!")
+        
+        # Ping ONLY known target IPs - FAST AS HELL!
+        for target_id, target_ip in game_state.target_ips.items():
             try:
-                print(f"🎯 Pinging {target_ip}:8080/ping...")
+                print(f"⚡ Pinging {target_id} at {target_ip}:8080...")
                 response = urequests.get(f"http://{target_ip}:8080/ping", timeout=1)
                 
                 if response.status_code == 200:
                     data = response.json()
-                    target_id = data.get('target_id', 'unknown')
-                    print(f"✅ Target {target_id} at {target_ip} is ALIVE!")
+                    print(f"✅ {target_id} at {target_ip} is ALIVE AND KICKING!")
                     alive_count += 1
                 else:
-                    print(f"⚠️ Target at {target_ip} responded with status {response.status_code}")
+                    print(f"⚠️ {target_id} at {target_ip} responded with status {response.status_code}")
                 
                 response.close()
                 
             except Exception as e:
-                # Target not reachable at this IP - that's fine
-                pass
+                print(f"💥 {target_id} at {target_ip} unreachable: {e}")
         
         # Update status display
         if alive_count == total_targets:
             self.ping_status.value(f"✅ {alive_count}/{total_targets}")
             self.ping_status.fgcolor = GREEN
-            print(f"🎉 ALL {alive_count} targets responded - PERFECT!")
+            print(f"🎆 ALL {alive_count} targets responded - FLAWLESS VICTORY!")
         elif alive_count > 0:
             self.ping_status.value(f"⚠️ {alive_count}/{total_targets}")
             self.ping_status.fgcolor = YELLOW
-            print(f"⚠️ Only {alive_count}/{total_targets} targets responded")
+            print(f"⚠️ {alive_count}/{total_targets} targets responded")
         else:
             self.ping_status.value("💥 None")
             self.ping_status.fgcolor = RED
