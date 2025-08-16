@@ -23,7 +23,7 @@ run_master() {
     fi
     echo "Running master mode with device: $SERIAL_MASTER"
     cd src
-    mpremote connect "$SERIAL_MASTER" mount . run master.py
+    mpremote connect "$SERIAL_MASTER" mount . run master_gui.py
 }
 
 # Function to run target mode

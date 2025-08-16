@@ -2,7 +2,7 @@ import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
-import gui.fonts.arial10 as arial10
+import gui.fonts.font14 as font
 from gui.core.colors import *
 
 class BaseScreen(Screen):
@@ -10,7 +10,7 @@ class BaseScreen(Screen):
         def my_callback(button, arg):
             print('Button pressed', arg)
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
         col = 2
         row = 2
         Label(wri, row, col, 'CARNIVAL SHOOTER')
