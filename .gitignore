@@ -1,5 +1,5 @@
 .DS_store
 snyper_env
 .prompts
-.extras
+.extra
 config.conf
