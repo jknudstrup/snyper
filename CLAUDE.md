@@ -45,7 +45,7 @@ Central event bus (`events.py`) coordinates communication between components:
 ### File Structure
 
 ```
-device/
+src/
 ├── main.py              # Main orchestrator and game loop
 ├── master_server.py     # HTTP server and WiFi AP management
 ├── events.py            # Event bus system

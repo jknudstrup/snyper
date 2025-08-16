@@ -22,7 +22,7 @@ run_master() {
         exit 1
     fi
     echo "Running master mode with device: $SERIAL_MASTER"
-    cd device
+    cd src
     mpremote connect "$SERIAL_MASTER" mount . run master.py
 }
 
@@ -33,7 +33,7 @@ run_target() {
         exit 1
     fi
     echo "Running target mode with device: $SERIAL_TARGET"
-    cd device
+    cd src
     mpremote connect "$SERIAL_TARGET" mount . run target.py
 }
 
