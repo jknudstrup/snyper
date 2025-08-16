@@ -46,6 +46,7 @@ class TargetServer:
                 "target_id": self.node_id,
                 "message": "Target reporting for duty!"
             }
+            print(f'Target {self.node_id} was pinged')
             return Response(json.dumps(response_data))
 
         @self.app.route('/stand_up')
