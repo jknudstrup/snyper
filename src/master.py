@@ -68,7 +68,9 @@ async def handle_target_hit(event):
 
 async def master_server_task():
     """Initialize and run the master server - our communications headquarters!"""
+    print("🌐 Creating MasterServer instance...")
     master_server = MasterServer(game_state)  # Pass the shared state
+    print("🌐 Starting master server...")
     await master_server.start_server(debug=True)  # Uses config values now!
 
 async def run_master():
@@ -76,9 +78,12 @@ async def run_master():
     print("🎪 Carnival Shooter Server deploying forces - FOR KING AND COUNTRY!")
     
     # Deploy the display unit first, synchronously, as per operational doctrine
+    print("🖥️  Starting display system...")
     start_display()
+    print("🖥️  Display system started successfully!")
     
     # Deploy our async task forces - the backbone of operations!
+    print("🚀 Deploying async task forces...")
     tasks = [
         asyncio.create_task(game_loop_task()),
         asyncio.create_task(master_server_task())

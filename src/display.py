@@ -23,7 +23,9 @@ class BaseScreen(Screen):
 def start_display():
     """Start the display - this runs synchronously like the hello world example!"""
     print('🎪 Display starting - just like the docs show!')
+    print('🖥️  Calling Screen.change(BaseScreen)...')
     Screen.change(BaseScreen)  # This should work now!
+    print('🖥️  Screen.change() returned - display should be active!')
 
 def test_display():
     """Non-async test function just like the hello world"""

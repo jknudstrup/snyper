@@ -5,14 +5,16 @@ import time
 from config import config
 
 def start_ap(ssid, password):
+    print(f"🌐 Creating WiFi Access Point: {ssid}")
     ap = network.WLAN(network.AP_IF)
     ap.active(True)
     ap.config(essid=ssid, password=password)
 
     while not ap.active():
+        print("⏳ Waiting for AP to activate...")
         time.sleep(0.1)
 
-    print(f"AP {ssid} up at {ap.ifconfig()[0]}")
+    print(f"✅ WiFi Access Point '{ssid}' is now ACTIVE at {ap.ifconfig()[0]} - targets can connect!")
 
 class MasterServer:
     """Master server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
