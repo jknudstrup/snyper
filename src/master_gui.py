@@ -105,9 +105,10 @@ async def standalone_master_server_task():
     master_server = MasterServer(game_state)  # Pass the shared state
     print("🌐 Starting master server from GUI...")
     
-    # Don't call start_ap here - GUI already did it
+    # Skip WiFi AP setup - GUI already did it, just start HTTP server
     print(f"🌐 Master HTTP server starting on {config.server_ip}:{config.port}")
     try:
+        # Call the microdot app directly, skip the MasterServer.start_server wrapper
         await master_server.app.start_server(host=config.server_ip, port=config.port, debug=True)
     except Exception as e:
         print(f"💥 Master server error: {e}")
@@ -154,6 +155,9 @@ class MasterScreen(Screen):
         print("🖥️  Display widgets created - now starting WiFi...")
         try:
             self.ap = start_ap(config.ssid, config.password)
+            # Verify AP is actually working
+            print(f"📶 WiFi AP Details: IP={self.ap.ifconfig()[0]}, Active={self.ap.active()}")
+            print(f"📶 AP Config: SSID='{config.ssid}', ready for target connections")
             self.wifi_status.value("ACTIVE")
             self.wifi_status.fgcolor = GREEN
         except Exception as e:
