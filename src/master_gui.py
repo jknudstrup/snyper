@@ -10,8 +10,109 @@ from gui.core.writer import CWriter
 import gui.fonts.arial10 as arial10
 from gui.core.colors import *
 
+# WiFi and config imports
+import network
+import time
+import asyncio
+from config import config
+
+# Task imports for server and game logic
+from master_server import MasterServer
+from events import event_bus, emit_event, subscribe_to_event, EventTypes
+
+def start_ap(ssid, password):
+    """Create WiFi Access Point"""
+    print(f"🌐 Creating WiFi AP: {ssid}")
+    ap = network.WLAN(network.AP_IF)
+    ap.active(True)
+    ap.config(essid=ssid, password=password)
+
+    while not ap.active():
+        print("⏳ Waiting for AP to activate...")
+        time.sleep(0.1)
+
+    print(f"✅ WiFi AP '{ssid}' ACTIVE at {ap.ifconfig()[0]}")
+    return ap
+
+# ========== GAME STATE & TASKS ==========
+
+class GameState:
+    """Shared game state - the backbone of our operation!"""
+    def __init__(self):
+        self.score = 0
+        self.active_targets = []
+        self.connected_clients = set()
+        self.game_running = False
+        self.event_bus = event_bus
+
+# Global game state instance
+game_state = GameState()
+
+# Event handlers for game loop
+async def handle_game_start(event):
+    """Respond to game start orders"""
+    print("🚀 Game loop received START command!")
+    game_state.game_running = True
+
+async def handle_game_stop(event):
+    """Respond to game stop orders"""
+    print("🛑 Game loop received STOP command!")
+    game_state.game_running = False
+
+async def handle_target_hit(event):
+    """Process target elimination reports"""
+    target_id = event.data.get('target_id')
+    if target_id and target_id in game_state.active_targets:
+        game_state.active_targets.remove(target_id)
+        old_score = game_state.score
+        game_state.score += 10
+        print(f"💥 Target {target_id} eliminated! Score: {old_score} -> {game_state.score}")
+        
+        # Broadcast score change intelligence
+        await emit_event(EventTypes.SCORE_CHANGED, "game_loop",
+                        old_score=old_score, new_score=game_state.score, target_id=target_id)
+
+async def standalone_game_loop_task():
+    """Main game logic - standalone version for GUI integration"""
+    print("🎯 Game loop starting, old chap!")
+    
+    # Subscribe to events that affect game logic
+    subscribe_to_event(EventTypes.GAME_STARTED, handle_game_start, "game_loop")
+    subscribe_to_event(EventTypes.GAME_STOPPED, handle_game_stop, "game_loop") 
+    subscribe_to_event(EventTypes.TARGET_HIT, handle_target_hit, "game_loop")
+    
+    while True:
+        if game_state.game_running:
+            print("🎮 Game tick - maintaining operational readiness...")
+            
+            # Example: Pop up a target every 3 seconds during game
+            if len(game_state.active_targets) < 3:  # Max 3 targets
+                target_id = f"target_{len(game_state.active_targets)}"
+                game_state.active_targets.append(target_id)
+                print(f"🎯 Target {target_id} deployed!")
+                
+                # Broadcast intelligence about new target
+                await emit_event(EventTypes.TARGET_SPAWNED, "game_loop", 
+                               target_id=target_id, position=len(game_state.active_targets))
+        
+        await asyncio.sleep(1.0)  # Strategic pause between operations
+
+async def standalone_master_server_task():
+    """Initialize and run the master server - standalone version for GUI integration"""
+    print("🌐 Creating MasterServer instance for GUI integration...")
+    master_server = MasterServer(game_state)  # Pass the shared state
+    print("🌐 Starting master server from GUI...")
+    
+    # Don't call start_ap here - GUI already did it
+    print(f"🌐 Master HTTP server starting on {config.server_ip}:{config.port}")
+    try:
+        await master_server.app.start_server(host=config.server_ip, port=config.port, debug=True)
+    except Exception as e:
+        print(f"💥 Master server error: {e}")
+        raise
+
 class MasterScreen(Screen):
-    """Minimal master screen - Phase 1"""
+    """SNYPER master screen - Phase 2"""
     def __init__(self):
         def my_callback(button, arg):
             print(f"🎮 Button pressed: {arg}")
@@ -22,19 +123,59 @@ class MasterScreen(Screen):
         col = 2
         row = 2
         Label(wri, row, col, "SNYPER")
-        row = 30
-        Label(wri, row, col, "Phase 1 - GUI Mode")
+        row = 25
+        Label(wri, row, col, "Phase 2 - Server Mode")
         
-        row = 60
+        # WiFi status display
+        row = 50
+        Label(wri, row, col, "WiFi AP:")
+        col += 60
+        self.wifi_status = Label(wri, row, col, "STARTING...", fgcolor=YELLOW)
+        
+        # Server status display
+        row = 70
+        col = 2
+        Label(wri, row, col, "Server:")
+        col += 60
+        self.server_status = Label(wri, row, col, "STARTING...", fgcolor=YELLOW)
+        
+        # Control buttons
+        row = 90
+        col = 2
         Button(wri, row, col, text="Test", callback=my_callback, args=("test",))
         col += 60
         Button(wri, row, col, text="Reset", callback=my_callback, args=("reset",))
         
         CloseButton(wri)
+        
+        # Setup WiFi AFTER display is ready
+        print("🖥️  Display widgets created - now starting WiFi...")
+        try:
+            self.ap = start_ap(config.ssid, config.password)
+            self.wifi_status.value("ACTIVE")
+            self.wifi_status.fgcolor = GREEN
+        except Exception as e:
+            print(f"💥 WiFi setup failed: {e}")
+            self.wifi_status.value("FAILED")
+            self.wifi_status.fgcolor = RED
+            return
+        
+        # Register async tasks with GUI - THIS IS THE KEY!
+        print("🚀 Registering async tasks with GUI...")
+        try:
+            self.reg_task(standalone_game_loop_task())
+            self.reg_task(standalone_master_server_task())
+            self.server_status.value("ACTIVE")
+            self.server_status.fgcolor = GREEN
+            print("✅ All tasks registered successfully!")
+        except Exception as e:
+            print(f"💥 Task registration failed: {e}")
+            self.server_status.value("FAILED")
+            self.server_status.fgcolor = RED
 
 def main():
     """Main GUI entry point"""
-    print("🎯 Starting SNYPER - GUI Mode (Phase 1)")
+    print("🎯 Starting SNYPER - GUI Mode (Phase 2 - Server)")
     Screen.change(MasterScreen)
 
 if __name__ == "__main__":
