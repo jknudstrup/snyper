@@ -22,11 +22,16 @@ import time
 import asyncio
 import urequests
 from config import config
+from helpers import reset_network_interface
 
 def start_ap(ssid, password):
-    """Create WiFi Access Point"""
+    """Create WiFi Access Point with clean network state"""
     print(f"🌐 Creating WiFi AP: {ssid}")
-    ap = network.WLAN(network.AP_IF)
+    
+    # Reset network interfaces first to clear any cached bullshit!
+    wlan, ap = reset_network_interface()
+    
+    # Now create a clean AP
     ap.active(True)
     ap.config(essid=ssid, password=password)
 

@@ -5,10 +5,14 @@ import time
 import urequests
 from config import config
 from events import event_bus, emit_event, EventTypes
+from helpers import reset_network_interface
 
 def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
-    wlan = network.WLAN(network.STA_IF)
+    # Reset network interfaces first to clear any cached bullshit!
+    wlan, ap = reset_network_interface()
+    
+    # Now do a clean connection
     wlan.active(True)
     wlan.connect(ssid, password)
 
