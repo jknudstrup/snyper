@@ -1,5 +1,11 @@
 # master_gui.py - GUI-First Master Controller
 
+# CRITICAL: Import heavy server components FIRST to get clean RAM!
+print("🚀 Pre-loading server components before GUI fragments memory...")
+from master_server import MasterServer
+from events import event_bus, emit_event, subscribe_to_event, EventTypes
+print("✅ Server components loaded in clean memory!")
+
 # hardware_setup must be imported before other modules because of RAM use.
 import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
@@ -15,10 +21,6 @@ import network
 import time
 import asyncio
 from config import config
-
-# Task imports for server and game logic
-from master_server import MasterServer
-from events import event_bus, emit_event, subscribe_to_event, EventTypes
 
 def start_ap(ssid, password):
     """Create WiFi Access Point"""
@@ -160,8 +162,8 @@ class MasterScreen(Screen):
             self.wifi_status.fgcolor = RED
             return
         
-        # Register async tasks with GUI - THIS IS THE KEY!
-        print("🚀 Registering async tasks with GUI...")
+        # Register async tasks with GUI - server already loaded!
+        print("🚀 Registering async tasks with GUI (no imports needed)...")
         try:
             self.reg_task(standalone_game_loop_task())
             self.reg_task(standalone_master_server_task())
