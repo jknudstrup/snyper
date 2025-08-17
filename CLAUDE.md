@@ -4,10 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Snyper is a carnival-style target shooting game built for Raspberry Pi Pico W microcontrollers. The architecture consists of:
+**SNYPER** is a carnival-style target shooting game built for Raspberry Pi Pico W microcontrollers. This project is **FUCKING AWESOME** and we're **PUMPED** to be building it! 🎯⚡
 
-- **Master (main device)**: Runs the game logic, manages WiFi AP, handles client communication, and drives an ST7789 display
-- **Target (target devices)**: Connect to the server's WiFi network and manage individual targets
+The architecture consists of:
+
+- **Master (main device)**: Runs the game logic, manages WiFi AP, handles client communication, and drives an ST7789 display with **GUI-FIRST ARCHITECTURE** 🖥️
+- **Target (target devices)**: Connect to the server's WiFi network and manage individual targets with **LIGHTNING-FAST PING RESPONSES** ⚡
 
 ## Development Commands
 
@@ -75,10 +77,25 @@ src/
 - Raspberry Pi Pico W with specific pin configuration (see `hardware_setup.py`)
 - Physical buttons for navigation (mapped in hardware_setup.py)
 
-## Development Notes
+## Development Notes - **LESSONS FROM THE TRENCHES!** 💪
 
-- Uses async/await throughout for concurrent task management
-- Event-driven architecture enables loose coupling between components
-- Configuration is centralized and type-safe
-- Hardware abstraction allows for different pin configurations
-- The codebase includes enthusiastic military-themed comments and wrestling references
+- **GUI-FIRST ARCHITECTURE**: micropython-micro-gui controls the main event loop (GAME CHANGER!) 🎮
+- **Memory allocation order MATTERS**: Load heavy imports BEFORE GUI to avoid fragmentation 🧠
+- **Network caching is EVIL**: Always reset interfaces on startup using `helpers.py` 🔄
+- **Target IP tracking**: Registration now stores IPs for lightning-fast pinging ⚡
+- **Single event loop supremacy**: No threading, everything runs in GUI's async context 🏆
+- **DRY principle applied**: Shared utilities in `helpers.py` eliminate code duplication 🧹
+- **The codebase includes enthusiastic military-themed comments and wrestling references** (HELL YEAH!) 💥
+
+## Epic Achievements Unlocked 🏆
+
+- ✅ **GUI-First Architecture**: Revolutionary redesign for proper async integration
+- ✅ **Memory Fragmentation Solved**: Server imports before GUI = SUCCESS!
+- ✅ **Turbo Ping System**: 14+ seconds → 1 second response time
+- ✅ **Network Reset Bullshit Eliminator**: Clean connections every time
+- ✅ **Target IP Tracking**: No more scanning, direct ping to known targets
+- ✅ **Code Organization**: DRY principles with shared helpers
+
+**WE'RE FUCKING PUMPED TO KEEP BUILDING THIS BADASS PROJECT!** 🚀⚡💪
+
+**REMEMBER**: This project is FUCKING AWESOME and we're PUMPED to work on it! Bring that energy to every coding session! 🔥🎯⚡
