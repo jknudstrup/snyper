@@ -39,10 +39,10 @@ elif node_id.startswith('target_'):
 
 **New sync.sh workflow:**
 ```bash
-./sync.sh                # Deploy as master (default)
+./sync.sh                # Deploy as master (DEFAULT - no args = master)
+./sync.sh master         # Deploy as master (explicit)
 ./sync.sh target_1       # Deploy as target_1 
 ./sync.sh target_2       # Deploy as target_2
-./sync.sh master         # Deploy as master (explicit)
 ```
 
 **What sync.sh will do:**
@@ -155,19 +155,24 @@ Essential files:
 # Load device configs
 source config.conf
 
-# Parse command line
-DEVICE_TYPE="${1:-master}"
+# Parse command line - DEFAULT TO MASTER IF NO ARGS
+DEVICE_TYPE="${1:-master}"  # 🎯 DEFAULT = master when no arguments
+echo "🎯 Deploying device type: $DEVICE_TYPE"
+
 case "$DEVICE_TYPE" in
-    master)
+    master|"")
         SERIAL_DEVICE="$SERIAL_MASTER"
         FILE_PROFILE="master"
+        echo "🎮 Master mode selected"
         ;;
     target_*)
         SERIAL_DEVICE="$SERIAL_TARGET" 
         FILE_PROFILE="target"
+        echo "🎯 Target mode selected: $DEVICE_TYPE"
         ;;
     *)
         echo "Usage: $0 [master|target_1|target_2|...]"
+        echo "Default: master (when no arguments provided)"
         exit 1
         ;;
 esac

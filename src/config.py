@@ -9,12 +9,24 @@ class Config:
         self.load_config()
     
     def load_config(self):
-        """Load config from file with error handling"""
+        """Load config from file with device_id overlay"""
         try:
+            # Load main config (source controlled)
             with open(self.config_file) as f:
                 self.config = json.load(f)
                 print("✅ Loaded config.json")
-                print(self.config)
+                
+            # Try to load device_id.json overlay (gitignored)
+            try:
+                with open("device_id.json") as f:
+                    device_config = json.load(f)
+                    self.config.node_id = device_config.node_id
+                    # self.config.update(device_config)  # Merge device identity
+                    # print(f"✅ Loaded device identity: {device_config.get('node_id')}")
+            except OSError:
+                print("ℹ️  No device_id.json found, using config.json node_id")
+                
+            print(self.config)
         except OSError:
             print(f"⚠️  Config file {self.config_file} not found, using defaults")
             self._set_defaults()
