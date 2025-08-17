@@ -42,6 +42,8 @@
 - **Incremental progress** - Small changes that work (like our GUI restructure phases)
 - **Learn from existing code** - Study micropython-micro-gui patterns before implementing
 
+- **KISS** - Don't get carried away with over-engineered solutions. Only build what you know we'll need!
+
 ### SNYPER-Specific Wisdom
 
 - **Import order is CRITICAL** - Server components before GUI to prevent memory fragmentation
@@ -78,6 +80,7 @@ For multi-step features, create a plan document (like `gui-restructure-plan.md`)
 3. **Test incrementally** - Verify each piece works before adding complexity
 4. **Commit working code** - Even if not perfect, commit functional states
 5. **Add epic commit messages** - Capture the badassery for posterity
+6. **Update CLAUDE.md as needed** - Update this file when new features are implemented. Also update this file when important facts are established: when certain approaches fail, or weird quirks and edge cases are discovered, etc.
 
 ### 3. When Stuck (3-Attempt Rule)
 
