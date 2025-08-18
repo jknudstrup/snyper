@@ -21,11 +21,11 @@ class NewGameScreen(Screen):
         # Game options (placeholder for now)
         row = 40
         Label(wri, row, col, "Game Mode:")
-        row += 20
-        Button(wri, row, col, text="Quick Game", callback=self.start_quick_game, args=("quick",))
+        row += 30
+        Button(wri, row, col, text="Quick Game", callback=self.start_quick_game, args=("quick",), height=25)
         
         row += 30
-        Button(wri, row, col, text="Custom Game", callback=self.start_custom_game, args=("custom",))
+        Button(wri, row, col, text="Custom Game", callback=self.start_custom_game, args=("custom",), height=25)
         
         # Back button
         CloseButton(wri)

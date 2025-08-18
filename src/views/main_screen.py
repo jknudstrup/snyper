@@ -24,32 +24,28 @@ class MainScreen(Screen):
         # Big title with freesans20 font
         title_wri = CWriter(ssd, freesans20, GREEN, BLACK, verbose=False)
         col = 2
-        row = 2
+        row = 5
         Label(title_wri, row, col, "SNYPER", fgcolor=GREEN)
-        
-        # Subtitle with smaller font
-        row = 30
-        Label(wri, row, col, "Carnival Target System", fgcolor=WHITE)
         
         # Import screen classes here to avoid circular imports
         from views.new_game_screen import NewGameScreen
         from views.options_screen import OptionsScreen
         from views.debug_screen import DebugScreen
         
-        # Navigation buttons (adjusted for larger title)
-        row = 70
+        # Navigation buttons (increased spacing for font14)
+        row = 60
         col = 2
-        Button(wri, row, col, text="New Game", callback=navigate_to_screen(NewGameScreen), args=("new_game",))
+        Button(wri, row, col, text="New Game", callback=navigate_to_screen(NewGameScreen), args=("new_game",), height=25)
         
-        row += 30
-        Button(wri, row, col, text="Options", callback=navigate_to_screen(OptionsScreen), args=("options",))
+        row += 40
+        Button(wri, row, col, text="Options", callback=navigate_to_screen(OptionsScreen), args=("options",), height=25)
         
-        row += 30  
-        Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen), args=("debug",))
+        row += 40  
+        Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen), args=("debug",), height=25)
         
-        # System status at bottom
-        row = 180
+        # System status at bottom (more space)
+        row = 200
         col = 2
         Label(wri, row, col, "System:", fgcolor=YELLOW)
-        col += 60
+        col += 80
         self.system_status = Label(wri, row, col, "Ready", fgcolor=GREEN)

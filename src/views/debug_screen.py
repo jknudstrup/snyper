@@ -21,7 +21,7 @@ class DebugScreen(Screen):
         
         # PING functionality (moved from old MasterScreen)
         row = 40
-        Button(wri, row, col, text="PING Targets", callback=self.ping_targets, args=("ping",))
+        Button(wri, row, col, text="PING Targets", callback=self.ping_targets, args=("ping",), height=25)
         
         # Ping status display
         row = 70
@@ -32,10 +32,10 @@ class DebugScreen(Screen):
         # Additional debug options
         row = 100
         col = 2
-        Button(wri, row, col, text="Network Info", callback=self.network_info, args=("network",))
+        Button(wri, row, col, text="Network Info", callback=self.network_info, args=("network",), height=25)
         
         row += 30
-        Button(wri, row, col, text="System Stats", callback=self.system_stats, args=("stats",))
+        Button(wri, row, col, text="System Stats", callback=self.system_stats, args=("stats",), height=25)
         
         # Back button
         CloseButton(wri)

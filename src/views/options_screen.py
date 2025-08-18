@@ -22,11 +22,11 @@ class OptionsScreen(Screen):
         row = 40
         Label(wri, row, col, "Configuration:")
         
-        row += 20
-        Button(wri, row, col, text="WiFi Settings", callback=self.wifi_settings, args=("wifi",))
+        row += 30
+        Button(wri, row, col, text="WiFi Settings", callback=self.wifi_settings, args=("wifi",), height=25)
         
         row += 30
-        Button(wri, row, col, text="Device Config", callback=self.device_config, args=("device",))
+        Button(wri, row, col, text="Device Config", callback=self.device_config, args=("device",), height=25)
         
         # Back button
         CloseButton(wri)
