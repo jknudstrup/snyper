@@ -120,6 +120,8 @@ async def standalone_master_server_task():
         print(f"💥 Master server error: {e}")
         raise
 
+# ========== SCREEN NAVIGATION SYSTEM ==========
+
 class MasterScreen(Screen):
     """SNYPER master screen - Phase 2"""
     def __init__(self):
@@ -253,9 +255,10 @@ class MasterScreen(Screen):
             print("💥 No targets responded to ping!")
 
 def run_master():
-    """Main GUI entry point"""
-    print("🎯 Starting SNYPER - GUI Mode (Phase 2 - Server)")
-    Screen.change(MasterScreen)
+    """Main GUI entry point - starts with navigation system"""
+    print("🎯 Starting SNYPER - Navigation System Active")
+    from views.main_screen import MainScreen
+    Screen.change(MainScreen)
 
 if __name__ == "__main__":
     run_master()
