@@ -11,6 +11,19 @@
 - **Master**: GUI-controlled game logic + WiFi AP + HTTP server + ST7789 display
 - **Targets**: WiFi clients with lightning-fast ping responses + target control endpoints
 
+### Screen Navigation System
+
+**Multi-screen interface with modular architecture:**
+- **MainScreen** - Navigation hub with New Game/Options/Debug buttons
+- **NewGameScreen** - Game setup interface (Quick Game, Custom Game options)
+- **OptionsScreen** - Configuration screen (WiFi settings, device config)
+- **DebugScreen** - Diagnostics and PING functionality
+
+**Navigation Pattern:**
+- `Screen.change(ScreenClass)` for forward navigation
+- `CloseButton(wri)` for back navigation to parent screen
+- Located in `src/views/` subfolder for clean organization
+
 ### Key Files
 
 - `master.py` - 🎮 **MAIN ENTRY POINT** (GUI-first architecture)
@@ -161,6 +174,10 @@ When multiple approaches exist, choose based on:
 - ✅ **Network Reset Bullshit Eliminator** - Clean connections every time
 - ✅ **Target IP Tracking** - Direct ping to known targets, no scanning
 - ✅ **DRY Code Organization** - Shared utilities eliminate duplication
+- ✅ **Multi-Screen Navigation System** - Clean UI architecture with MainScreen hub
+- ✅ **Modular Screen Architecture** - Organized views/ subfolder with dedicated modules
+- ✅ **Device Disable Mode** - Development-friendly quiet device operation
+- ✅ **Streamlined Sync System** - 68% code reduction with full folder sync
 
 ## Hardware Setup
 
