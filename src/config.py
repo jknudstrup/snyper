@@ -20,9 +20,8 @@ class Config:
             try:
                 with open("device_id.json") as f:
                     device_config = json.load(f)
-                    self.config.node_id = device_config.node_id
-                    # self.config.update(device_config)  # Merge device identity
-                    # print(f"✅ Loaded device identity: {device_config.get('node_id')}")
+                    self.config.update(device_config)
+                    print(f"✅ Loaded device identity: {device_config.get('node_id')}")
             except OSError:
                 print("ℹ️  No device_id.json found, using config.json node_id")
                 
@@ -79,6 +78,10 @@ class Config:
     @property
     def port(self) -> int:
         return int(self.get("port", 80))
+    
+    @property
+    def node_id(self) -> str:
+        return self.get("node_id", "master")
     
     @ssid.setter
     def ssid(self, value: str):

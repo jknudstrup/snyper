@@ -252,10 +252,10 @@ class MasterScreen(Screen):
             self.ping_status.fgcolor = RED
             print("💥 No targets responded to ping!")
 
-def main():
+def run_master():
     """Main GUI entry point"""
     print("🎯 Starting SNYPER - GUI Mode (Phase 2 - Server)")
     Screen.change(MasterScreen)
 
 if __name__ == "__main__":
-    main()
+    run_master()

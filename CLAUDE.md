@@ -13,7 +13,7 @@
 
 ### Key Files
 
-- `master_gui.py` - 🎮 **MAIN ENTRY POINT** (GUI-first architecture)
+- `master.py` - 🎮 **MAIN ENTRY POINT** (GUI-first architecture)
 - `helpers.py` - 🔧 Shared utilities (network reset bullshit eliminator)
 - `target_server.py` - 🎯 Target endpoints with ping responses
 - `master_server.py` - 🌐 HTTP server with target IP tracking
@@ -54,7 +54,7 @@
 ## Development Commands
 
 ```bash
-./dev.sh        # Run master (uses master_gui.py)
+./dev.sh        # Run master (uses master.py)
 ./dev.sh -t     # Run target
 ./killmp.sh     # Kill stuck mpremote processes
 ```
@@ -148,6 +148,31 @@ When confused about external library behavior, check `.extra/` folder:
 - Focus on examples and patterns, not implementation details
 
 ## Critical Reminders
+
+**DEV MODE vs DEVICE MODE IMPORT PATHS:**
+
+**CRITICAL DISTINCTION**: Import behavior differs drastically between development and deployment!
+
+**Dev Mode (mpremote connect "$<WHICHIVER_MODE>" mount . run <WHICHEVER_THING>.py):**
+
+- Files run from host filesystem via mount
+- Import paths work as expected from src/ structure
+- `from config import config` works directly
+
+**Device Mode (files copied to device):**
+
+- Files run from device's local filesystem
+- `lib/` folder gets added to Python path automatically
+- Import paths may break due to different sys.path
+- Relative imports behave differently
+- **WATCH OUT**: Imports that work in dev mode may fail on device!
+
+**Debugging Strategy:**
+
+- Always test actual device deployment, not just mounted dev mode
+- Check `sys.path` on device vs development
+- Look for import errors that only surface during real deployment
+- Consider path differences when troubleshooting mysterious failures
 
 **MEMORY ALLOCATION ORDER IS EVERYTHING:**
 
