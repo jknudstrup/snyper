@@ -5,7 +5,10 @@ from master import run_master
 from target import run_target
 
 def main():
-    if config.node_id == "master":
+    if config.node_id == "disable":
+        print("🚫 Device disabled - terminating to prevent auto-start")
+        return
+    elif config.node_id == "master":
         asyncio.run(run_master())
     else:
         asyncio.run(run_target())

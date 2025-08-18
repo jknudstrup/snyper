@@ -26,9 +26,14 @@ case "$DEVICE_TYPE" in
         SERIAL_DEVICE="$SERIAL_TARGET" 
         echo "🎯 Target mode selected: $DEVICE_TYPE"
         ;;
+    disable)
+        SERIAL_DEVICE="$SERIAL_MASTER"  # Default to master device for disable
+        echo "🚫 Disable mode selected - device will not auto-start"
+        ;;
     *)
-        echo "Usage: $0 [master|target_1|target_2|...]"
+        echo "Usage: $0 [master|target_1|target_2|...|disable]"
         echo "Default: master (when no arguments provided)"
+        echo "  disable: Set device to disabled state (no auto-start)"
         exit 1
         ;;
 esac

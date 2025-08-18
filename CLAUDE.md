@@ -66,6 +66,7 @@
 ./sync.sh master        # Deploy to master device (explicit)
 ./sync.sh target_1      # Deploy to target_1 device  
 ./sync.sh target_2      # Deploy to target_2 device
+./sync.sh disable       # Disable device (prevent auto-start)
 ```
 
 **Sync Process:**
@@ -78,6 +79,14 @@
 - **Device identity switching** - Same codebase, different device roles
 - **Optimized size** - Removed GUI demos and unused microdot modules
 - **Fast sync** - Direct folder copy, no temp staging
+- **Development disable mode** - Prevent auto-start during development
+
+**Disable Mode:**
+- **Purpose** - Prevents device from auto-starting WiFi AP, GUI, and servers
+- **Usage** - `./sync.sh disable` sets device to disabled state
+- **Behavior** - Device loads config but immediately terminates main()
+- **Development benefit** - Keeps devices quiet during testing/debugging
+- **Re-enable** - Use `./sync.sh master` or `./sync.sh target_X` to restore functionality
 
 ## Implementation Process
 
