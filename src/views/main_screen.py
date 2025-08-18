@@ -4,7 +4,8 @@ from gui.core.ugui import Screen
 from gui.widgets import Label, Button
 from gui.core.writer import CWriter
 from gui.core.colors import *
-import gui.fonts.arial10 as arial10
+import gui.fonts.font14 as font14
+import gui.fonts.freesans20 as freesans20
 from hardware_setup import ssd
 
 def navigate_to_screen(screen_class):
@@ -18,13 +19,16 @@ class MainScreen(Screen):
     """SNYPER Main Menu - Navigation Hub"""
     def __init__(self):
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font14, GREEN, BLACK, verbose=False)
         
-        # Title
+        # Big title with freesans20 font
+        title_wri = CWriter(ssd, freesans20, GREEN, BLACK, verbose=False)
         col = 2
         row = 2
-        Label(wri, row, col, "SNYPER", fgcolor=GREEN)
-        row = 25
+        Label(title_wri, row, col, "SNYPER", fgcolor=GREEN)
+        
+        # Subtitle with smaller font
+        row = 30
         Label(wri, row, col, "Carnival Target System", fgcolor=WHITE)
         
         # Import screen classes here to avoid circular imports
@@ -32,8 +36,8 @@ class MainScreen(Screen):
         from views.options_screen import OptionsScreen
         from views.debug_screen import DebugScreen
         
-        # Navigation buttons
-        row = 60
+        # Navigation buttons (adjusted for larger title)
+        row = 70
         col = 2
         Button(wri, row, col, text="New Game", callback=navigate_to_screen(NewGameScreen), args=("new_game",))
         

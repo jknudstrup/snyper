@@ -4,14 +4,14 @@ from gui.core.ugui import Screen
 from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
 from gui.core.colors import *
-import gui.fonts.arial10 as arial10
+import gui.fonts.font14 as font14
 from hardware_setup import ssd
 
 class NewGameScreen(Screen):
     """New Game Setup Screen"""
     def __init__(self):
         super().__init__()
-        wri = CWriter(ssd, arial10, GREEN, BLACK, verbose=False)
+        wri = CWriter(ssd, font14, GREEN, BLACK, verbose=False)
         
         # Title
         col = 2
