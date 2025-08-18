@@ -53,11 +53,31 @@
 
 ## Development Commands
 
+### Development Mode (Live Coding)
 ```bash
 ./dev.sh        # Run master (uses master.py)
 ./dev.sh -t     # Run target
 ./killmp.sh     # Kill stuck mpremote processes
 ```
+
+### Device Deployment (Production Sync)
+```bash
+./sync.sh               # Deploy to master device (default)
+./sync.sh master        # Deploy to master device (explicit)
+./sync.sh target_1      # Deploy to target_1 device  
+./sync.sh target_2      # Deploy to target_2 device
+```
+
+**Sync Process:**
+1. **Device identity generation** - Creates `device_id.json` with specified node_id
+2. **Full src deployment** - Copies entire src/ folder to device
+3. **Automatic configuration** - Device reads identity from device_id.json overlay
+
+**Key Benefits:**
+- **One-command deployment** - No manual config editing required
+- **Device identity switching** - Same codebase, different device roles
+- **Optimized size** - Removed GUI demos and unused microdot modules
+- **Fast sync** - Direct folder copy, no temp staging
 
 ## Implementation Process
 
@@ -173,6 +193,12 @@ When confused about external library behavior, check `.extra/` folder:
 - Check `sys.path` on device vs development
 - Look for import errors that only surface during real deployment
 - Consider path differences when troubleshooting mysterious failures
+
+**SYNC SYSTEM CRITICAL NOTES:**
+- **Use `mpremote cp -r . :` NOT `mpremote mount . cp -r . :`** - The mount command causes sync failures
+- **Always activate Python environment** before running sync.sh (contains mpremote)
+- **Device identity overlay** - `device_id.json` automatically overrides config.json node_id
+- **Full folder sync** - Simpler and more reliable than selective file copying
 
 **MEMORY ALLOCATION ORDER IS EVERYTHING:**
 
