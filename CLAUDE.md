@@ -98,6 +98,7 @@
 - **Purpose** - Prevents device from auto-starting WiFi AP, GUI, and servers
 - **Usage** - `./sync.sh disable` sets device to disabled state
 - **Behavior** - Device loads config but immediately terminates main()
+- **Auto-reset** - Device automatically resets after disable deployment for immediate effect
 - **Development benefit** - Keeps devices quiet during testing/debugging
 - **Re-enable** - Use `./sync.sh master` or `./sync.sh target_X` to restore functionality
 
@@ -176,7 +177,8 @@ When multiple approaches exist, choose based on:
 - ✅ **DRY Code Organization** - Shared utilities eliminate duplication
 - ✅ **Multi-Screen Navigation System** - Clean UI architecture with MainScreen hub
 - ✅ **Modular Screen Architecture** - Organized views/ subfolder with dedicated modules
-- ✅ **Device Disable Mode** - Development-friendly quiet device operation
+- ✅ **Font14 UI Upgrade** - Enhanced readability with proper button sizing and spacing
+- ✅ **Device Disable Mode** - Development-friendly quiet device operation with auto-reset
 - ✅ **Streamlined Sync System** - 68% code reduction with full folder sync
 
 ## Hardware Setup

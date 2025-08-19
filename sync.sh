@@ -56,3 +56,10 @@ cd ..
 
 echo "✅ $DEVICE_TYPE deployed successfully!"
 echo "🎯 Device identity: $DEVICE_TYPE"
+
+# Reset device after disable deployment
+if [ "$DEVICE_TYPE" = "disable" ]; then
+    echo "🔄 Resetting device after disable deployment..."
+    mpremote connect "$SERIAL_DEVICE" reset
+    echo "🚫 Device reset complete - disabled mode active"
+fi
