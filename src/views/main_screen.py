@@ -23,6 +23,9 @@ class MainScreen(Screen):
     def __init__(self, game_state=None):
         super().__init__()
         self.game_state = game_state
+        
+        # Start the HTTP server and game loop tasks
+        self._start_server_tasks()
         wri = CWriter(ssd, font14, GREEN, BLACK, verbose=False)
         
         # Big title with freesans20 font
@@ -53,3 +56,13 @@ class MainScreen(Screen):
         Label(wri, row, col, "System:", fgcolor=YELLOW)
         col += 80
         self.system_status = Label(wri, row, col, "Ready", fgcolor=GREEN)
+    
+    def _start_server_tasks(self):
+        """Start the HTTP server and game loop async tasks"""
+        from master import standalone_master_server_task, standalone_game_loop_task
+        
+        print("🚀 Registering HTTP server task with GUI event loop...")
+        self.reg_task(standalone_master_server_task())
+        
+        print("🎮 Registering game loop task with GUI event loop...")  
+        self.reg_task(standalone_game_loop_task())
