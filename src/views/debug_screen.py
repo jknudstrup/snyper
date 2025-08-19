@@ -1,7 +1,7 @@
 # debug_screen.py - Debug and Diagnostics Screen
 
 from gui.core.ugui import Screen
-from gui.widgets import Label, Button, CloseButton
+from gui.widgets import Label, Button, CloseButton, Dropdown
 from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
@@ -17,7 +17,7 @@ class DebugScreen(Screen):
         # Title
         col = 2
         row = 2
-        Label(wri, row, col, "Debug & Diagnostics", fgcolor=GREEN)
+        Label(wri, row, col, "Debug", fgcolor=GREEN)
         
         # PING functionality (moved from old MasterScreen)
         row = 40
@@ -29,13 +29,20 @@ class DebugScreen(Screen):
         col += 80
         self.ping_status = Label(wri, row, col, "Ready", fgcolor=WHITE)
         
-        # Additional debug options
+        # Target selection dropdown
         row = 100
         col = 2
-        Button(wri, row, col, text="Network Info", callback=self.network_info, args=("network",), height=25)
+        self.target_dropdown = Dropdown(wri, row, col,
+                                      elements=self.get_target_list(),
+                                      dlines=3,
+                                      bdcolor=GREEN,
+                                      callback=self.target_selected)
         
-        row += 30
-        Button(wri, row, col, text="System Stats", callback=self.system_stats, args=("stats",), height=25)
+        # Selected target display
+        row += 40
+        Label(wri, row, col, "Selected:", fgcolor=YELLOW)
+        col += 80
+        self.selected_target_label = Label(wri, row, col, "None", fgcolor=WHITE)
         
         # Back button
         CloseButton(wri)
@@ -93,10 +100,20 @@ class DebugScreen(Screen):
             self.ping_status.fgcolor = RED
             print("💥 No targets responded to ping!")
     
-    def network_info(self, button, arg):
-        print("📶 Displaying network information...")
-        # TODO: Implement network diagnostics
-        
-    def system_stats(self, button, arg):
-        print("📊 Displaying system statistics...")
-        # TODO: Implement system statistics
+    def get_target_list(self):
+        """Get list of target names for dropdown"""
+        try:
+            from master import game_state
+            if hasattr(game_state, 'target_ips') and game_state.target_ips:
+                return list(game_state.target_ips.keys())
+            else:
+                return ["No targets registered"]
+        except ImportError:
+            return ["Master not loaded"]
+    
+    def target_selected(self, dropdown):
+        """Handle target selection from dropdown"""
+        selected = dropdown.textvalue()
+        self.selected_target_label.value(selected)
+        print(f"🎯 Target selected: {selected}")
+    
