@@ -6,6 +6,9 @@
 #   ./dev.sh -m    - Run master mode
 #   ./dev.sh -t    - Run target mode
 
+# Activate Python virtual environment
+source snyper_env/bin/activate
+
 # Check if config.conf exists
 if [ ! -f "config.conf" ]; then
     echo "Error: config.conf not found"
