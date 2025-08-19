@@ -8,17 +8,21 @@ import gui.fonts.font14 as font14
 import gui.fonts.freesans20 as freesans20
 from hardware_setup import ssd
 
-def navigate_to_screen(screen_class):
+def navigate_to_screen(screen_class, game_state=None):
     """Helper function to navigate to a screen"""
     def callback(button, arg):
         print(f"🔄 Navigating to {screen_class.__name__}")
-        Screen.change(screen_class)
+        if game_state and screen_class.__name__ == 'DebugScreen':
+            Screen.change(screen_class, args=(game_state,))
+        else:
+            Screen.change(screen_class)
     return callback
 
 class MainScreen(Screen):
     """SNYPER Main Menu - Navigation Hub"""
-    def __init__(self):
+    def __init__(self, game_state=None):
         super().__init__()
+        self.game_state = game_state
         wri = CWriter(ssd, font14, GREEN, BLACK, verbose=False)
         
         # Big title with freesans20 font
@@ -41,7 +45,7 @@ class MainScreen(Screen):
         Button(wri, row, col, text="Options", callback=navigate_to_screen(OptionsScreen), args=("options",), height=25)
         
         row += 40  
-        Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen), args=("debug",), height=25)
+        Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.game_state), args=("debug",), height=25)
         
         # System status at bottom (more space)
         row = 200

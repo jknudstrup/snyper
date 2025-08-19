@@ -9,9 +9,10 @@ from hardware_setup import ssd
 import urequests
 
 class DebugScreen(Screen):
-    """Debug and Diagnostics Screen"""  
-    def __init__(self):
+    """Debug Screen"""  
+    def __init__(self, game_state=None):
         super().__init__()
+        self.game_state = game_state
         wri = CWriter(ssd, font14, GREEN, BLACK, verbose=False)
         
         # Title
@@ -53,23 +54,20 @@ class DebugScreen(Screen):
         self.ping_status.value("Pinging...")
         self.ping_status.fgcolor = YELLOW
         
-        # Import here to avoid circular dependency
-        from master import game_state
-        
         # Check if we have target IPs stored
-        if not hasattr(game_state, 'target_ips') or not game_state.target_ips:
+        if not self.game_state or not hasattr(self.game_state, 'target_ips') or not self.game_state.target_ips:
             self.ping_status.value("No IPs stored")
             self.ping_status.fgcolor = RED
             print("💥 No target IPs stored - targets need to register first!")
             return
         
         alive_count = 0
-        total_targets = len(game_state.target_ips)
+        total_targets = len(self.game_state.target_ips)
         
         print(f"🚀 Pinging {total_targets} registered targets - NO SCANNING!")
         
         # Ping ONLY known target IPs - FAST AS HELL!
-        for target_id, target_ip in game_state.target_ips.items():
+        for target_id, target_ip in self.game_state.target_ips.items():
             try:
                 print(f"⚡ Pinging {target_id} at {target_ip}:8080...")
                 response = urequests.get(f"http://{target_ip}:8080/ping", timeout=1)
@@ -102,14 +100,10 @@ class DebugScreen(Screen):
     
     def get_target_list(self):
         """Get list of target names for dropdown"""
-        try:
-            from master import game_state
-            if hasattr(game_state, 'target_ips') and game_state.target_ips:
-                return list(game_state.target_ips.keys())
-            else:
-                return ["No targets registered"]
-        except ImportError:
-            return ["Master not loaded"]
+        if self.game_state and hasattr(self.game_state, 'target_ips') and self.game_state.target_ips:
+            return list(self.game_state.target_ips.keys())
+        else:
+            return ["No targets registered"]
     
     def target_selected(self, dropdown):
         """Handle target selection from dropdown"""

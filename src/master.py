@@ -126,7 +126,7 @@ def run_master():
     """Main GUI entry point - starts with navigation system"""
     print("🎯 Starting SNYPER - Navigation System Active")
     from views.main_screen import MainScreen
-    Screen.change(MainScreen)
+    Screen.change(MainScreen, args=(game_state,))
 
 if __name__ == "__main__":
     run_master()
