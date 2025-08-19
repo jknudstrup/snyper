@@ -73,6 +73,9 @@
 ./killmp.sh     # Kill stuck mpremote processes
 ```
 
+### Commit Permissions
+**CLEARANCE GRANTED**: Claude is authorized to commit changes at will during development sessions. Use good judgment for commit timing (completed features, bug fixes, working states). Continue using descriptive commit messages that capture the badassery being achieved.
+
 ### Device Deployment (Production Sync)
 ```bash
 ./sync.sh               # Deploy to master device (default)
