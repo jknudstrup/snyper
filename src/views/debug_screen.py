@@ -100,9 +100,16 @@ class DebugScreen(Screen):
     
     def get_target_list(self):
         """Get list of target names for dropdown"""
+        print(f"🔍 Debug: game_state = {self.game_state}")
+        print(f"🔍 Debug: hasattr target_ips = {hasattr(self.game_state, 'target_ips') if self.game_state else False}")
+        print(f"🔍 Debug: target_ips = {getattr(self.game_state, 'target_ips', None) if self.game_state else None}")
+        
         if self.game_state and hasattr(self.game_state, 'target_ips') and self.game_state.target_ips:
-            return list(self.game_state.target_ips.keys())
+            targets = list(self.game_state.target_ips.keys())
+            print(f"🎯 Found {len(targets)} registered targets: {targets}")
+            return targets
         else:
+            print("⚠️ No targets found - returning placeholder")
             return ["No targets registered"]
     
     def target_selected(self, dropdown):
@@ -110,4 +117,11 @@ class DebugScreen(Screen):
         selected = dropdown.textvalue()
         self.selected_target_label.value(selected)
         print(f"🎯 Target selected: {selected}")
+    
+    def refresh_target_dropdown(self):
+        """Update dropdown with current registered targets"""
+        new_elements = self.get_target_list()
+        self.target_dropdown.els = new_elements
+        self.target_dropdown.update()
+        print(f"🔄 Target dropdown refreshed: {len(new_elements)} targets available")
     

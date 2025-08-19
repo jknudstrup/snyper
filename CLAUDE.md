@@ -1,5 +1,7 @@
 # SNYPER Development Guide
 
+# CAPTAIN'S LOG
+
 **THIS PROJECT IS FUCKING AWESOME AND WE'RE PUMPED TO BUILD IT!** 🎯⚡
 
 ## Project Overview
@@ -14,12 +16,14 @@
 ### Screen Navigation System
 
 **Multi-screen interface with modular architecture:**
+
 - **MainScreen** - Navigation hub with New Game/Options/Debug buttons
 - **NewGameScreen** - Game setup interface (Quick Game, Custom Game options)
 - **OptionsScreen** - Configuration screen (WiFi settings, device config)
 - **DebugScreen** - Diagnostics and PING functionality
 
 **Navigation Pattern:**
+
 - `Screen.change(ScreenClass)` for forward navigation
 - `CloseButton(wri)` for back navigation to parent screen
 - Located in `src/views/` subfolder for clean organization
@@ -67,6 +71,7 @@
 ## Development Commands
 
 ### Development Mode (Live Coding)
+
 ```bash
 ./dev.sh        # Run master (uses master.py)
 ./dev.sh -t     # Run target
@@ -74,23 +79,27 @@
 ```
 
 ### Commit Permissions
+
 **CLEARANCE GRANTED**: Claude is authorized to commit changes at will during development sessions. Use good judgment for commit timing (completed features, bug fixes, working states). Continue using descriptive commit messages that capture the badassery being achieved.
 
 ### Device Deployment (Production Sync)
+
 ```bash
 ./sync.sh               # Deploy to master device (default)
 ./sync.sh master        # Deploy to master device (explicit)
-./sync.sh target_1      # Deploy to target_1 device  
+./sync.sh target_1      # Deploy to target_1 device
 ./sync.sh target_2      # Deploy to target_2 device
 ./sync.sh disable       # Disable device (prevent auto-start)
 ```
 
 **Sync Process:**
+
 1. **Device identity generation** - Creates `device_id.json` with specified node_id
 2. **Full src deployment** - Copies entire src/ folder to device
 3. **Automatic configuration** - Device reads identity from device_id.json overlay
 
 **Key Benefits:**
+
 - **One-command deployment** - No manual config editing required
 - **Device identity switching** - Same codebase, different device roles
 - **Optimized size** - Removed GUI demos and unused microdot modules
@@ -98,6 +107,7 @@
 - **Development disable mode** - Prevent auto-start during development
 
 **Disable Mode:**
+
 - **Purpose** - Prevents device from auto-starting WiFi AP, GUI, and servers
 - **Usage** - `./sync.sh disable` sets device to disabled state
 - **Behavior** - Device loads config but immediately terminates main()
@@ -226,6 +236,7 @@ When confused about external library behavior, check `.extra/` folder:
 - Consider path differences when troubleshooting mysterious failures
 
 **SYNC SYSTEM CRITICAL NOTES:**
+
 - **Use `mpremote cp -r . :` NOT `mpremote mount . cp -r . :`** - The mount command causes sync failures
 - **Always activate Python environment** before running sync.sh (contains mpremote)
 - **Device identity overlay** - `device_id.json` automatically overrides config.json node_id

@@ -1,4 +1,9 @@
-# master_gui.py - GUI-First Master Controller
+# master.py - GUI-First Master Controller
+#
+# ⚠️  STANDING ORDER: NO IMPORTS FROM THIS FILE ⚠️
+# ONLY main.py may import run_master() from this file.
+# All other scripts must use helpers.py for shared functions.
+# This prevents circular dependencies and maintains clean architecture.
 
 # CRITICAL: Import heavy server components FIRST to get clean RAM!
 print("🚀 Pre-loading server components before GUI fragments memory...")

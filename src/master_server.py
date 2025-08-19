@@ -47,6 +47,8 @@ class MasterServer:
             self.game_state.target_ips[client_id] = client_ip
             
             print(f"🤝 Client {client_id} at {client_ip} connected - LOCKED AND LOADED!")
+            print(f"🔍 Server Debug: game_state = {self.game_state}")
+            print(f"🔍 Server Debug: target_ips = {self.game_state.target_ips}")
             
             response_data = {"status": "registered", "client_id": client_id}
             return Response(json.dumps(response_data))

@@ -59,7 +59,7 @@ class MainScreen(Screen):
     
     def _start_server_tasks(self):
         """Start the HTTP server and game loop async tasks"""
-        from master import standalone_master_server_task, standalone_game_loop_task
+        from helpers import standalone_master_server_task, standalone_game_loop_task
         
         print("🚀 Registering HTTP server task with GUI event loop...")
         self.reg_task(standalone_master_server_task())
