@@ -167,6 +167,86 @@ class MasterController:
         
         return results
     
+    async def raise_all(self):
+        """Send stand_up command to all registered targets"""
+        if not self.system_state.targets:
+            print("⚠️ No targets registered to raise")
+            return {}
+        
+        results = {}
+        print(f"🚀 Sending STAND UP command to {len(self.system_state.targets)} targets...")
+        
+        for target_name, target_info in self.system_state.targets.items():
+            target_ip = target_info["ip"]
+            target_url = f"http://{target_ip}:{self.system_state.port}/stand_up"
+            
+            try:
+                print(f"⬆️ Commanding {target_name} to stand up...")
+                response = urequests.get(target_url, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "standing":
+                        print(f"✅ {target_name} is now STANDING - ready for action!")
+                        results[target_name] = {"status": "standing", "ip": target_ip}
+                    else:
+                        print(f"⚠️ {target_name} responded but status unexpected: {data}")
+                        results[target_name] = {"status": "unknown", "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
+                    results[target_name] = {"status": "error", "ip": target_ip}
+                
+                response.close()
+                
+            except Exception as e:
+                print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
+                results[target_name] = {"status": "failed", "ip": target_ip}
+            
+            # Allow GUI to stay responsive between commands
+            await asyncio.sleep(0.1)
+        
+        return results
+    
+    async def lower_all(self):
+        """Send lay_down command to all registered targets"""
+        if not self.system_state.targets:
+            print("⚠️ No targets registered to lower")
+            return {}
+        
+        results = {}
+        print(f"🚀 Sending LAY DOWN command to {len(self.system_state.targets)} targets...")
+        
+        for target_name, target_info in self.system_state.targets.items():
+            target_ip = target_info["ip"]
+            target_url = f"http://{target_ip}:{self.system_state.port}/lay_down"
+            
+            try:
+                print(f"⬇️ Commanding {target_name} to lay down...")
+                response = urequests.get(target_url, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "down":
+                        print(f"✅ {target_name} is now DOWN - taking cover!")
+                        results[target_name] = {"status": "down", "ip": target_ip}
+                    else:
+                        print(f"⚠️ {target_name} responded but status unexpected: {data}")
+                        results[target_name] = {"status": "unknown", "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
+                    results[target_name] = {"status": "error", "ip": target_ip}
+                
+                response.close()
+                
+            except Exception as e:
+                print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
+                results[target_name] = {"status": "failed", "ip": target_ip}
+            
+            # Allow GUI to stay responsive between commands
+            await asyncio.sleep(0.1)
+        
+        return results
+    
     async def ping_and_cleanup_targets(self):
         """Ping all targets and remove any that fail to respond"""
         results = await self.ping_targets()
