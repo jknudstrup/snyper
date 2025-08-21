@@ -61,35 +61,46 @@ class DebugScreen(Screen):
             print("💥 No controller provided to DebugScreen!")
             return
         
-        # Use controller's ping and cleanup method
-        results = self.controller.ping_and_cleanup_targets()
-        
-        if not results:
-            self.ping_status.value("No targets")
+        # Register async ping task with GUI event loop
+        self.reg_task(self._do_ping_async())
+    
+    async def _do_ping_async(self):
+        """Async wrapper for ping operation"""
+        try:
+            # Use controller's ping and cleanup method
+            results = await self.controller.ping_and_cleanup_targets()
+            
+            if not results:
+                self.ping_status.value("No targets")
+                self.ping_status.fgcolor = RED
+                print("💥 No targets to ping!")
+                return
+            
+            # Count alive targets
+            alive_count = sum(1 for result in results.values() if result["status"] == "alive")
+            total_targets = len(results)
+            
+            # Update status display
+            if alive_count == total_targets:
+                self.ping_status.value(f"✅ {alive_count}/{total_targets}")
+                self.ping_status.fgcolor = GREEN
+                print(f"🎆 ALL {alive_count} targets responded - FLAWLESS VICTORY!")
+            elif alive_count > 0:
+                self.ping_status.value(f"⚠️ {alive_count}/{total_targets}")
+                self.ping_status.fgcolor = YELLOW
+                print(f"⚠️ {alive_count}/{total_targets} targets responded")
+            else:
+                self.ping_status.value("💥 None")
+                self.ping_status.fgcolor = RED
+                print("💥 No targets responded to ping!")
+            
+            # Refresh dropdown in case targets were removed
+            self.refresh_target_dropdown()
+            
+        except Exception as e:
+            self.ping_status.value("Error")
             self.ping_status.fgcolor = RED
-            print("💥 No targets to ping!")
-            return
-        
-        # Count alive targets
-        alive_count = sum(1 for result in results.values() if result["status"] == "alive")
-        total_targets = len(results)
-        
-        # Update status display
-        if alive_count == total_targets:
-            self.ping_status.value(f"✅ {alive_count}/{total_targets}")
-            self.ping_status.fgcolor = GREEN
-            print(f"🎆 ALL {alive_count} targets responded - FLAWLESS VICTORY!")
-        elif alive_count > 0:
-            self.ping_status.value(f"⚠️ {alive_count}/{total_targets}")
-            self.ping_status.fgcolor = YELLOW
-            print(f"⚠️ {alive_count}/{total_targets} targets responded")
-        else:
-            self.ping_status.value("💥 None")
-            self.ping_status.fgcolor = RED
-            print("💥 No targets responded to ping!")
-        
-        # Refresh dropdown in case targets were removed
-        self.refresh_target_dropdown()
+            print(f"💥 Ping operation failed: {e}")
     
     def get_target_list(self):
         """Get list of target names for dropdown"""
