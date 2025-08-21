@@ -17,12 +17,10 @@ class SystemState:
         self.password = config.password  
         self.server_ip = config.server_ip
         self.port = config.port
-        self.node_id = config.node_id
         
         # Target tracking - unified structure
         self.targets = {}  # target_name -> {"ip": ip_address, ...}
         
-        print(f"📊 SystemState initialized - Node: {self.node_id}, AP: {self.ssid}")
 
 class GameState:
     """Game-specific state that resets between games"""
@@ -130,68 +128,44 @@ class MasterController:
         return targets
     
     async def ping_targets(self):
-        """Ping all registered targets concurrently and return results"""
+        """Ping all registered targets and return results"""
         if not self.system_state.targets:
             print("⚠️ No targets registered to ping")
             return {}
         
-        print(f"🚀 Pinging {len(self.system_state.targets)} registered targets concurrently...")
-        
-        # Create ping tasks for all targets
-        ping_tasks = []
-        target_names = []
+        results = {}
+        print(f"🚀 Pinging {len(self.system_state.targets)} registered targets...")
         
         for target_name, target_info in self.system_state.targets.items():
             target_ip = target_info["ip"]
-            target_names.append(target_name)
-            ping_tasks.append(self._ping_single_target(target_name, target_ip))
-        
-        # Execute all pings concurrently
-        results_list = await asyncio.gather(*ping_tasks, return_exceptions=True)
-        
-        # Build results dictionary
-        results = {}
-        for i, result in enumerate(results_list):
-            target_name = target_names[i]
-            if isinstance(result, dict):
-                results[target_name] = result
-            else:
-                # Handle exceptions from gather
-                print(f"💥 {target_name} ping task failed: {result}")
-                target_ip = self.system_state.targets[target_name]["ip"]
+            target_url = f"http://{target_ip}:{self.system_state.port}/ping"
+            
+            try:
+                print(f"⚡ Pinging {target_name} at {target_ip}...")
+                response = urequests.get(target_url, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "alive":
+                        print(f"✅ {target_name} at {target_ip} is ALIVE AND KICKING!")
+                        results[target_name] = {"status": "alive", "ip": target_ip}
+                    else:
+                        print(f"⚠️ {target_name} responded but status is not alive: {data}")
+                        results[target_name] = {"status": "unknown", "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
+                    results[target_name] = {"status": "error", "ip": target_ip}
+                
+                response.close()
+                
+            except Exception as e:
+                print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
                 results[target_name] = {"status": "failed", "ip": target_ip}
+            
+            # Allow GUI to stay responsive between pings
+            await asyncio.sleep(0.1)
         
         return results
-    
-    async def _ping_single_target(self, target_name, target_ip):
-        """Ping a single target asynchronously"""
-        target_url = f"http://{target_ip}:{self.system_state.port}/ping"
-        
-        try:
-            print(f"⚡ Pinging {target_name} at {target_ip}...")
-            
-            # Use asyncio to make the request non-blocking
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(None, lambda: urequests.get(target_url, timeout=10))
-            
-            if response.status_code == 200:
-                data = response.json()
-                if data.get("status") == "alive":
-                    print(f"✅ {target_name} at {target_ip} is ALIVE AND KICKING!")
-                    response.close()
-                    return {"status": "alive", "ip": target_ip}
-                else:
-                    print(f"⚠️ {target_name} responded but status is not alive: {data}")
-                    response.close()
-                    return {"status": "unknown", "ip": target_ip}
-            else:
-                print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
-                response.close()
-                return {"status": "error", "ip": target_ip}
-                
-        except Exception as e:
-            print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
-            return {"status": "failed", "ip": target_ip}
     
     async def ping_and_cleanup_targets(self):
         """Ping all targets and remove any that fail to respond"""
