@@ -138,7 +138,7 @@ class TargetServer:
         except Exception as e:
             print(f"💥 Hit reporting error: {e}")
 
-    async def start_server(self, host='0.0.0.0', port=8080):
+    async def start_server(self, host='0.0.0.0', port=config.port):
         """Start the target server - time to get this party started!"""
         print(f"📡 Connecting to master WiFi: {config.ssid}")
         connect_to_wifi(config.ssid, config.password)
