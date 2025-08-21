@@ -49,47 +49,30 @@ class DebugScreen(Screen):
         CloseButton(wri)
     
     def ping_targets(self, button, arg):
-        """PING ALL THE TARGETS - moved from old MasterScreen"""
+        """PING ALL THE TARGETS - with cleanup via controller"""
         print("⚡ TURBO PING SEQUENCE INITIATED!")
         self.ping_status.value("Pinging...")
         self.ping_status.fgcolor = YELLOW
         
-        # Check if we have controller and target IPs
+        # Check if we have controller
         if not self.controller:
             self.ping_status.value("No controller")
             self.ping_status.fgcolor = RED
             print("💥 No controller provided to DebugScreen!")
             return
-            
-        target_ips = self.controller.ping_targets()
-        if not target_ips:
-            self.ping_status.value("No IPs stored")
+        
+        # Use controller's ping and cleanup method
+        results = self.controller.ping_and_cleanup_targets()
+        
+        if not results:
+            self.ping_status.value("No targets")
             self.ping_status.fgcolor = RED
-            print("💥 No target IPs stored - targets need to register first!")
+            print("💥 No targets to ping!")
             return
         
-        alive_count = 0
-        total_targets = len(target_ips)
-        
-        print(f"🚀 Pinging {total_targets} registered targets - NO SCANNING!")
-        
-        # Ping ONLY known target IPs - FAST AS HELL!
-        for target_id, target_ip in target_ips.items():
-            try:
-                print(f"⚡ Pinging {target_id} at {target_ip}:8080...")
-                response = urequests.get(f"http://{target_ip}:8080/ping", timeout=1)
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    print(f"✅ {target_id} at {target_ip} is ALIVE AND KICKING!")
-                    alive_count += 1
-                else:
-                    print(f"⚠️ {target_id} at {target_ip} responded with status {response.status_code}")
-                
-                response.close()
-                
-            except Exception as e:
-                print(f"💥 {target_id} at {target_ip} unreachable: {e}")
+        # Count alive targets
+        alive_count = sum(1 for result in results.values() if result["status"] == "alive")
+        total_targets = len(results)
         
         # Update status display
         if alive_count == total_targets:
@@ -104,6 +87,9 @@ class DebugScreen(Screen):
             self.ping_status.value("💥 None")
             self.ping_status.fgcolor = RED
             print("💥 No targets responded to ping!")
+        
+        # Refresh dropdown in case targets were removed
+        self.refresh_target_dropdown()
     
     def get_target_list(self):
         """Get list of target names for dropdown"""

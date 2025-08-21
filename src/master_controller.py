@@ -4,6 +4,7 @@
 
 import asyncio
 import time
+import urequests
 from config import config
 from helpers import reset_network_interface
 
@@ -129,8 +130,61 @@ class MasterController:
         return targets
     
     def ping_targets(self):
-        """Get target IPs for ping operations"""
-        return {name: target["ip"] for name, target in self.system_state.targets.items()}
+        """Ping all registered targets and return results"""
+        if not self.system_state.targets:
+            print("⚠️ No targets registered to ping")
+            return {}
+        
+        results = {}
+        print(f"🚀 Pinging {len(self.system_state.targets)} registered targets...")
+        
+        for target_name, target_info in self.system_state.targets.items():
+            target_ip = target_info["ip"]
+            target_url = f"http://{target_ip}:{self.system_state.port}/ping"
+            
+            try:
+                print(f"⚡ Pinging {target_name} at {target_ip}...")
+                response = urequests.get(target_url, timeout=10)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("status") == "alive":
+                        print(f"✅ {target_name} at {target_ip} is ALIVE AND KICKING!")
+                        results[target_name] = {"status": "alive", "ip": target_ip}
+                    else:
+                        print(f"⚠️ {target_name} responded but status is not alive: {data}")
+                        results[target_name] = {"status": "unknown", "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
+                    results[target_name] = {"status": "error", "ip": target_ip}
+                
+                response.close()
+                
+            except Exception as e:
+                print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
+                results[target_name] = {"status": "failed", "ip": target_ip}
+        
+        return results
+    
+    def ping_and_cleanup_targets(self):
+        """Ping all targets and remove any that fail to respond"""
+        results = self.ping_targets()
+        
+        # Remove failed targets from system state
+        failed_targets = [name for name, result in results.items() if result["status"] == "failed"]
+        
+        if failed_targets:
+            print(f"🧹 Cleaning up {len(failed_targets)} failed targets...")
+            for target_name in failed_targets:
+                target_ip = self.system_state.targets[target_name]["ip"]
+                del self.system_state.targets[target_name]
+                print(f"🗑️ Removed {target_name} ({target_ip}) from registered targets")
+            
+            print(f"📊 Cleanup complete: {len(self.system_state.targets)} targets remaining")
+        else:
+            print("✨ All targets responded successfully - no cleanup needed!")
+        
+        return results
     
     def start_game(self):
         """Start a new game"""
