@@ -10,9 +10,9 @@ import urequests
 
 class DebugScreen(Screen):
     """Debug Screen"""  
-    def __init__(self, game_state=None):
+    def __init__(self, controller=None):
         super().__init__()
-        self.game_state = game_state
+        self.controller = controller
         wri = CWriter(ssd, font14, GREEN, BLACK, verbose=False)
         
         # Title
@@ -54,20 +54,27 @@ class DebugScreen(Screen):
         self.ping_status.value("Pinging...")
         self.ping_status.fgcolor = YELLOW
         
-        # Check if we have target IPs stored
-        if not self.game_state or not hasattr(self.game_state, 'target_ips') or not self.game_state.target_ips:
+        # Check if we have controller and target IPs
+        if not self.controller:
+            self.ping_status.value("No controller")
+            self.ping_status.fgcolor = RED
+            print("💥 No controller provided to DebugScreen!")
+            return
+            
+        target_ips = self.controller.ping_targets()
+        if not target_ips:
             self.ping_status.value("No IPs stored")
             self.ping_status.fgcolor = RED
             print("💥 No target IPs stored - targets need to register first!")
             return
         
         alive_count = 0
-        total_targets = len(self.game_state.target_ips)
+        total_targets = len(target_ips)
         
         print(f"🚀 Pinging {total_targets} registered targets - NO SCANNING!")
         
         # Ping ONLY known target IPs - FAST AS HELL!
-        for target_id, target_ip in self.game_state.target_ips.items():
+        for target_id, target_ip in target_ips.items():
             try:
                 print(f"⚡ Pinging {target_id} at {target_ip}:8080...")
                 response = urequests.get(f"http://{target_ip}:8080/ping", timeout=1)
@@ -100,16 +107,14 @@ class DebugScreen(Screen):
     
     def get_target_list(self):
         """Get list of target names for dropdown"""
-        print(f"🔍 Debug: game_state = {self.game_state}")
-        print(f"🔍 Debug: hasattr target_ips = {hasattr(self.game_state, 'target_ips') if self.game_state else False}")
-        print(f"🔍 Debug: target_ips = {getattr(self.game_state, 'target_ips', None) if self.game_state else None}")
-        
-        if self.game_state and hasattr(self.game_state, 'target_ips') and self.game_state.target_ips:
-            targets = list(self.game_state.target_ips.keys())
-            print(f"🎯 Found {len(targets)} registered targets: {targets}")
+        if not self.controller:
+            print("⚠️ No controller provided to DebugScreen")
+            return ["No controller"]
+            
+        targets = self.controller.get_targets()
+        if targets:
             return targets
         else:
-            print("⚠️ No targets found - returning placeholder")
             return ["No targets registered"]
     
     def target_selected(self, dropdown):

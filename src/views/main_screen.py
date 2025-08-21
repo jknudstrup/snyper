@@ -8,21 +8,21 @@ import gui.fonts.font14 as font14
 import gui.fonts.freesans20 as freesans20
 from hardware_setup import ssd
 
-def navigate_to_screen(screen_class, game_state=None):
+def navigate_to_screen(screen_class, controller=None):
     """Helper function to navigate to a screen"""
     def callback(button, arg):
         print(f"🔄 Navigating to {screen_class.__name__}")
-        if game_state and screen_class.__name__ == 'DebugScreen':
-            Screen.change(screen_class, args=(game_state,))
+        if controller and screen_class.__name__ == 'DebugScreen':
+            Screen.change(screen_class, args=(controller,))
         else:
             Screen.change(screen_class)
     return callback
 
 class MainScreen(Screen):
     """SNYPER Main Menu - Navigation Hub"""
-    def __init__(self, game_state=None):
+    def __init__(self, controller=None):
         super().__init__()
-        self.game_state = game_state
+        self.controller = controller
         
         # Start the HTTP server and game loop tasks
         self._start_server_tasks()
@@ -48,7 +48,7 @@ class MainScreen(Screen):
         Button(wri, row, col, text="Options", callback=navigate_to_screen(OptionsScreen), args=("options",), height=25)
         
         row += 40  
-        Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.game_state), args=("debug",), height=25)
+        Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
         # System status at bottom (more space)
         row = 200
@@ -59,10 +59,12 @@ class MainScreen(Screen):
     
     def _start_server_tasks(self):
         """Start the HTTP server and game loop async tasks"""
-        from helpers import standalone_master_server_task, standalone_game_loop_task
-        
+        if not self.controller:
+            print("⚠️ No controller provided - skipping server tasks")
+            return
+            
         print("🚀 Registering HTTP server task with GUI event loop...")
-        self.reg_task(standalone_master_server_task())
+        self.reg_task(self.controller.start_server())
         
         print("🎮 Registering game loop task with GUI event loop...")  
-        self.reg_task(standalone_game_loop_task())
+        self.reg_task(self.controller.start_game_loop())
