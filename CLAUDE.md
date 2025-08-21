@@ -4,6 +4,18 @@
 
 **THIS PROJECT IS FUCKING AWESOME AND WE'RE PUMPED TO BUILD IT!** 🎯⚡
 
+## CURRENT TASK
+
+**Active Mission**: Implement MasterController Pattern Architecture
+
+**Planning Document**: `.claude/controller-pattern-plan.md`
+
+**Objective**: Replace event-driven architecture with Controller pattern for shared state management. Create SystemState class for persistent state (config, connected_clients) and GameState class for game-specific state (score, targets). Fix target registration dropdown issue by ensuring all components use the same controller instance.
+
+**Status**: Planning Complete, Implementation Pending
+
+**Next Action**: Begin Phase 1 - Create MasterController class structure in `master_controller.py`
+
 ## Project Overview
 
 **SNYPER** is a carnival-style target shooting game for Raspberry Pi Pico W microcontrollers with a revolutionary **GUI-first architecture**.
@@ -119,7 +131,7 @@
 
 ### 1. Planning Complex Changes
 
-For multi-step features, create a plan document (like `gui-restructure-plan.md`):
+For multi-step features, create a plan document (like `gui-restructure-plan.md`) within the .claude folder:
 
 ```markdown
 ## Phase N: [Name]

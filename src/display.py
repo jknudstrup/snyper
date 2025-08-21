@@ -1,4 +1,3 @@
-import hardware_setup  # Create a display instance
 from gui.core.ugui import Screen, ssd
 from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
