@@ -7,6 +7,7 @@ from gui.core.colors import *
 import gui.fonts.font14 as font14
 import gui.fonts.freesans20 as freesans20
 from hardware_setup import ssd
+from display import PhysicalButtonOverlay
 
 def navigate_to_screen(screen_class, controller=None):
     """Helper function to navigate to a screen"""
@@ -50,12 +51,10 @@ class MainScreen(Screen):
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
-        # System status at bottom (more space)
-        row = 200
-        col = 2
-        Label(wri, row, col, "System:", fgcolor=YELLOW)
-        col += 80
-        self.system_status = Label(wri, row, col, "Ready", fgcolor=GREEN)
+        # Initialize physical button overlay 
+        self.button_overlay = PhysicalButtonOverlay()
+        print("✨ MainScreen with physical button overlay ready!")
+        
     
     def _start_server_tasks(self):
         """Start the HTTP server and game loop async tasks"""
