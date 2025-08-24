@@ -111,10 +111,10 @@ class PhysicalButtonOverlay:
     
     def __init__(self, wri):
         # Initialize physical buttons from hardware_setup.py
-        self.keyA = Pushbutton(Pin(15, Pin.IN, Pin.PULL_UP))
-        self.keyB = Pushbutton(Pin(17, Pin.IN, Pin.PULL_UP))  
-        self.keyX = Pushbutton(Pin(19, Pin.IN, Pin.PULL_UP))
-        self.keyY = Pushbutton(Pin(21, Pin.IN, Pin.PULL_UP))
+        self.keyA = Pushbutton(Pin(15, Pin.IN, Pin.PULL_UP))  # Back/Cancel button
+        self.keyB = Pushbutton(Pin(17, Pin.IN, Pin.PULL_UP))  # Skip button
+        self.keyX = Pushbutton(Pin(19, Pin.IN, Pin.PULL_UP))  # New button
+        # self.keyY = Pushbutton(Pin(21, Pin.IN, Pin.PULL_UP))  # Now handled by GUI as 'sel'
         
         # Create icon writer for button icons
         self.wri_icons = CWriter(ssd, icons, WHITE, BLACK, verbose=False)
@@ -155,12 +155,12 @@ class PhysicalButtonOverlay:
     
     def bind_physical_to_gui(self):
         """Bind physical button presses to trigger GUI button actions"""
-        self.keyA.press_func(self.trigger_gui_button, (0,))
+        self.keyA.press_func(self.back_button_pressed)  # A = Back/Cancel like CloseButton
         self.keyB.press_func(self.trigger_gui_button, (1,))
         self.keyX.press_func(self.trigger_gui_button, (2,))  
-        self.keyY.press_func(self.trigger_gui_button, (3,))
+        # Y button now handled by GUI navigation system as 'sel'
         
-        print("🔗 Physical buttons bound to GUI buttons")
+        print("🔗 Physical buttons bound: A=Back, B/X=GUI, Y=Sel")
     
     def trigger_gui_button(self, button_index):
         """Simulate GUI button press and provide visual feedback"""
@@ -168,26 +168,35 @@ class PhysicalButtonOverlay:
             gui_btn = self.gui_buttons[button_index]
             gui_btn.trigger()  # Triggers callback and visual lighting effect
     
-    # Test callback methods
+    def back_button_pressed(self):
+        """Handle A button as back/cancel button like CloseButton"""
+        # Trigger visual feedback on A button (index 0)
+        if len(self.gui_buttons) > 0:
+            self.gui_buttons[0].trigger()  # Visual feedback only
+        # Navigate back like CloseButton does
+        Screen.back()
+        print("⬅️ Back button pressed - navigating back")
+    
+    # Visual callback methods (for GUI button feedback only)
     def button_a_pressed(self, button):
-        """Handle A button press"""
+        """Visual feedback for A button (actual back functionality in back_button_pressed)"""
         _ = button  # Acknowledge parameter
-        print("🅰️ Button A pressed!")
+        # Visual feedback only - back functionality handled by back_button_pressed()
         
     def button_b_pressed(self, button): 
         """Handle B button press"""
         _ = button  # Acknowledge parameter
-        print("🅱️ Button B pressed!")
+        print("🅱️ Skip button pressed!")
         
     def button_x_pressed(self, button):
         """Handle X button press"""
         _ = button  # Acknowledge parameter
-        print("❌ Button X pressed!")
+        print("❌ New button pressed!")
         
     def button_y_pressed(self, button):
-        """Handle Y button press"""
+        """Visual feedback for Y button (actual select functionality handled by GUI system)"""
         _ = button  # Acknowledge parameter
-        print("🎯 Button Y pressed!")
+        # Visual feedback only - select functionality handled by GUI navigation
 
 def test_display():
     """Non-async test function just like the hello world"""
