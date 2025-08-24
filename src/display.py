@@ -129,10 +129,10 @@ class PhysicalButtonOverlay:
         """Create circular GUI buttons in vertical column on right edge"""
         # Button positions on absolute screen coordinates (right edge)
         button_configs = [
-            {'label': 'A', 'row': 15, 'col': 208, 'callback': self.button_a_pressed},
-            {'label': 'B', 'row': 75, 'col': 208, 'callback': self.button_b_pressed}, 
-            {'label': 'X', 'row': 135, 'col': 208, 'callback': self.button_x_pressed},
-            {'label': 'Y', 'row': 195, 'col': 208, 'callback': self.button_y_pressed}
+            {'label': 'A', 'row': 15, 'col': 208, 'callback': self.button_a_pressed, 'color': RED},
+            {'label': 'B', 'row': 75, 'col': 208, 'callback': self.button_b_pressed, 'color': BLUE}, 
+            {'label': 'X', 'row': 135, 'col': 208, 'callback': self.button_x_pressed, 'color': CYAN},
+            {'label': 'Y', 'row': 195, 'col': 208, 'callback': self.button_y_pressed, 'color': GREEN}
         ]
         
         for config in button_configs:
@@ -145,8 +145,8 @@ class PhysicalButtonOverlay:
                                height=25,
                                width=25,  
                                fgcolor=WHITE,
-                               bgcolor=DARKBLUE,
-                               litcolor=LIGHTGREEN)
+                               bgcolor=config['color'],
+                               litcolor=YELLOW)  # Use yellow for lit state to contrast with all colors
             self.gui_buttons.append(btn)
             
         print(f"📱 Created {len(self.gui_buttons)} circular GUI buttons")
