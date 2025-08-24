@@ -107,9 +107,22 @@ def start_display():
     print('🖥️  Screen.change() returned - display should be active!')
 
 class PhysicalButtonOverlay:
-    """Physical button overlay with GUI buttons on right side of screen"""
+    """Configurable physical button overlay with GUI buttons on right side of screen"""
     
-    def __init__(self, wri):
+    def __init__(self, wri, button_config=None):
+        """
+        Initialize physical button overlay with configurable GUI buttons
+        
+        Args:
+            wri: Text writer for regular fonts
+            button_config: Dict configuring which GUI buttons to show:
+                {
+                    'A': {'visible': True, 'icon': 'D', 'color': RED, 'callback': self.method},
+                    'B': {'visible': False},
+                    'X': {'visible': True, 'icon': 'E', 'color': BLUE, 'callback': self.method},
+                    'Y': {'visible': True, 'icon': 'F', 'color': GREEN, 'callback': self.method}
+                }
+        """
         # Initialize physical buttons from hardware_setup.py
         self.keyA = Pushbutton(Pin(15, Pin.IN, Pin.PULL_UP))  # Back/Cancel button
         self.keyB = Pushbutton(Pin(17, Pin.IN, Pin.PULL_UP))  # Skip button
@@ -119,58 +132,101 @@ class PhysicalButtonOverlay:
         # Create icon writer for button icons
         self.wri_icons = CWriter(ssd, icons, WHITE, BLACK, verbose=False)
         
+        # Store button configuration (default to main screen config if none provided)
+        self.button_config = button_config or self.get_default_config()
+        
         # Create GUI buttons positioned on screen
         self.gui_buttons = []
         self.setup_gui_buttons()
         self.bind_physical_to_gui()
         
-        print("🎮 Physical button overlay initialized!")
+        print(f"🎮 Physical button overlay initialized with {len(self.gui_buttons)} visible buttons!")
+    
+    def get_default_config(self):
+        """Default configuration: main screen with only Y button visible"""
+        return {
+            'A': {'visible': False},  # A = Back (physical only)
+            'B': {'visible': False},  # B = Skip (physical only)
+            'X': {'visible': False},  # X = New (physical only)  
+            'Y': {'visible': True, 'icon': 'F', 'color': DARKGREEN, 'callback': self.button_y_pressed}  # Y = Select indicator
+        }
+    
+    @staticmethod
+    def get_debug_config():
+        """Configuration for debug screen: show all buttons"""
+        return {
+            'A': {'visible': True, 'icon': 'D', 'color': RED, 'callback': lambda b: print("🔄 Debug: Replay")},
+            'B': {'visible': True, 'icon': 'C', 'color': BLUE, 'callback': lambda b: print("⏭️ Debug: Skip")},
+            'X': {'visible': True, 'icon': 'E', 'color': DARKBLUE, 'callback': lambda b: print("🆕 Debug: New")},
+            'Y': {'visible': True, 'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: print("▶️ Debug: Play")}
+        }
+    
+    @staticmethod
+    def get_game_config():
+        """Configuration for game screen: show game control buttons"""
+        return {
+            'A': {'visible': True, 'icon': 'A', 'color': RED, 'callback': lambda b: print("🛑 Game: Stop")},      # A = Stop
+            'B': {'visible': True, 'icon': 'B', 'color': BLUE, 'callback': lambda b: print("⏸️ Game: Pause")},    # B = Pause  
+            'X': {'visible': False},  # X = Not used in game
+            'Y': {'visible': True, 'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: print("▶️ Game: Play")} # Y = Play
+        }
     
     def setup_gui_buttons(self):
-        """Create circular GUI buttons in vertical column on right edge"""
-        # For main screen: only show Y (Play/Select) button as visual indicator
-        # Other screens could show different configurations
-        button_configs = [
-            # Only Y button visible on main screen as "Confirm/Select" indicator
-            {'label': 'F', 'row': 195, 'col': 208, 'callback': self.button_y_pressed, 'color': DARKGREEN}# Y → Play/Select
-        ]
+        """Create circular GUI buttons based on configuration"""
+        positions = {'A': 15, 'B': 75, 'X': 135, 'Y': 195}  # Row positions for each button
         
-        for config in button_configs:
-            btn = PassiveButton(self.wri_icons,  # Use icon writer for icons
-                               row=config['row'], 
-                               col=config['col'],
-                               text=config['label'],  # Icon character (D, C, E, F)
-                               callback=config['callback'],
-                               shape=CIRCLE,
-                               height=25,
-                               width=25,  
-                               fgcolor=WHITE,
-                               bgcolor=config['color'],
-                               litcolor=None)  # No color change feedback
-            self.gui_buttons.append(btn)
+        for button_name, row in positions.items():
+            config = self.button_config.get(button_name, {})
             
-        print(f"📱 Created {len(self.gui_buttons)} circular GUI buttons")
+            if config.get('visible', False):
+                btn = PassiveButton(
+                    self.wri_icons,
+                    row=row,
+                    col=208,
+                    text=config.get('icon', button_name),  # Default to button name if no icon specified
+                    callback=config.get('callback', lambda button: None),
+                    shape=CIRCLE,
+                    height=25,
+                    width=25,
+                    fgcolor=WHITE,
+                    bgcolor=config.get('color', GREY),
+                    litcolor=None  # No color change feedback
+                )
+                self.gui_buttons.append({'name': button_name, 'button': btn})
+        
+        print(f"📱 Created {len(self.gui_buttons)} configurable GUI buttons")
     
     def bind_physical_to_gui(self):
         """Bind physical button presses to trigger GUI button actions"""
-        self.keyA.press_func(self.back_button_pressed)  # A = Back/Cancel like CloseButton
-        self.keyB.press_func(self.trigger_gui_button, (1,))
-        self.keyX.press_func(self.trigger_gui_button, (2,))  
+        self.keyA.press_func(self.back_button_pressed)  # A = Back/Cancel (always)
+        self.keyB.press_func(self.trigger_physical_button, ('B',))
+        self.keyX.press_func(self.trigger_physical_button, ('X',))  
         # Y button now handled by GUI navigation system as 'sel'
         
-        print("🔗 Physical buttons bound: A=Back, B/X=GUI, Y=Sel")
+        print("🔗 Physical buttons bound: A=Back, B/X=Configurable, Y=Sel")
     
-    def trigger_gui_button(self, button_index):
-        """Simulate GUI button press and provide visual feedback"""
-        if 0 <= button_index < len(self.gui_buttons):
-            gui_btn = self.gui_buttons[button_index]
-            gui_btn.trigger()  # Triggers callback and visual lighting effect
+    def trigger_physical_button(self, button_name):
+        """Handle physical button press with optional visual feedback"""
+        # Find GUI button for this physical button
+        gui_button_info = next((item for item in self.gui_buttons if item['name'] == button_name), None)
+        
+        if gui_button_info:
+            # Trigger visual feedback and callback
+            gui_button_info['button'].trigger()
+        else:
+            # Physical button only - call default handlers
+            if button_name == 'B':
+                self.button_b_pressed(None)
+            elif button_name == 'X':
+                self.button_x_pressed(None)
     
     def back_button_pressed(self):
         """Handle A button as back/cancel button like CloseButton"""
-        # Trigger visual feedback on A button (index 0)
-        if len(self.gui_buttons) > 0:
-            self.gui_buttons[0].trigger()  # Visual feedback only
+        # Trigger visual feedback on A button if visible
+        a_button_info = next((item for item in self.gui_buttons if item['name'] == 'A'), None)
+        if a_button_info:
+            a_button_info['button'].trigger()  # Visual feedback
+        
         # Navigate back like CloseButton does
         Screen.back()
         print("⬅️ Back button pressed - navigating back")
