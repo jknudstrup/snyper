@@ -1,7 +1,7 @@
 # new_game_screen.py - New Game Setup Screen
 
 from gui.core.ugui import Screen
-from gui.widgets import Label, Button, CloseButton
+from gui.widgets import Label, Button
 from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
@@ -27,8 +27,7 @@ class NewGameScreen(Screen):
         row += 30
         Button(wri, row, col, text="Custom Game", callback=self.start_custom_game, args=("custom",), height=25)
         
-        # Back button
-        CloseButton(wri)
+        # Back functionality now handled by physical A button
     
     def start_quick_game(self, button, arg):
         print("🎮 Starting quick game...")

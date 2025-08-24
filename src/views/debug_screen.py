@@ -1,7 +1,7 @@
 # debug_screen.py - Debug and Diagnostics Screen
 
 from gui.core.ugui import Screen
-from gui.widgets import Label, Button, CloseButton, Dropdown
+from gui.widgets import Label, Button, Dropdown
 from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
@@ -39,8 +39,7 @@ class DebugScreen(Screen):
         col += 80
         self.selected_target_label = Label(wri, row, col, "None", fgcolor=WHITE)
         
-        # Back button
-        CloseButton(wri)
+        # Back functionality now handled by physical A button
     
     def ping_targets(self, button, arg):
         """PING ALL THE TARGETS - with cleanup via controller"""

@@ -1,7 +1,7 @@
 # options_screen.py - Options and Configuration Screen
 
 from gui.core.ugui import Screen
-from gui.widgets import Label, Button, CloseButton
+from gui.widgets import Label, Button
 from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
@@ -28,8 +28,7 @@ class OptionsScreen(Screen):
         row += 30
         Button(wri, row, col, text="Device Config", callback=self.device_config, args=("device",), height=25)
         
-        # Back button
-        CloseButton(wri)
+        # Back functionality now handled by physical A button
     
     def wifi_settings(self, button, arg):
         print("📶 Opening WiFi settings...")
