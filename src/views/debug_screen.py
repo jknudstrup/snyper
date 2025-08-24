@@ -24,12 +24,6 @@ class DebugScreen(Screen):
         row = 40
         Button(wri, row, col, text="PING Targets", callback=self.ping_targets, args=("ping",), height=25)
         
-        # Ping status display
-        row = 70
-        Label(wri, row, col, "Ping Status:")
-        col += 80
-        self.ping_status = Label(wri, row, col, "Ready", fgcolor=WHITE)
-        
         # Target selection dropdown
         row = 100
         col = 2
@@ -112,7 +106,7 @@ class DebugScreen(Screen):
         if targets:
             return targets
         else:
-            return ["No targets registered"]
+            return ["No targets"]
     
     def target_selected(self, dropdown):
         """Handle target selection from dropdown"""

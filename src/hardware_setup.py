@@ -47,10 +47,10 @@ ssd = SSD(spi, dc=pdc, cs=pcs, rst=prst, disp_mode=PORTRAIT)
 
 # You'll also need to update the button pins to match your hardware if they are different.
 # Your previous code used:
-# keyA = Pin(15,Pin.IN,Pin.PULL_UP) -> Not present in this example, but you'd need to map it if used.
-# keyB = Pin(17,Pin.IN,Pin.PULL_UP)
-# keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
-# keyY= Pin(21 ,Pin.IN,Pin.PULL_UP)
+keyA = Pin(15,Pin.IN,Pin.PULL_UP)
+keyB = Pin(17,Pin.IN,Pin.PULL_UP)
+keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
+keyY= Pin(21 ,Pin.IN,Pin.PULL_UP)
 # up = Pin(2,Pin.IN,Pin.PULL_UP)
 # dowm = Pin(18,Pin.IN,Pin.PULL_UP)
 # left = Pin(16,Pin.IN,Pin.PULL_UP)
