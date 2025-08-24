@@ -51,8 +51,8 @@ class MainScreen(Screen):
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
-        # Initialize physical button overlay 
-        self.button_overlay = PhysicalButtonOverlay()
+        # Initialize physical button overlay with writer
+        self.button_overlay = PhysicalButtonOverlay(wri)
         print("✨ MainScreen with physical button overlay ready!")
         
     

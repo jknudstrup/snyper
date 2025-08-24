@@ -1,4 +1,4 @@
-from gui.core.ugui import Screen, Window, ssd
+from gui.core.ugui import Screen, ssd
 from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
 from gui.primitives.pushbutton import Pushbutton
@@ -28,25 +28,20 @@ def start_display():
     Screen.change(BaseScreen)  # This should work now!
     print('🖥️  Screen.change() returned - display should be active!')
 
-class PhysicalButtonOverlay(Window):
+class PhysicalButtonOverlay:
     """Physical button overlay with GUI buttons on right side of screen"""
     
-    def __init__(self):
-        # Create a window on the right side for buttons
-        # Window positioned at right edge: x=205, width=35, full height
-        super().__init__(row=0, col=205, height=240, width=35, 
-                        draw_border=False, bgcolor=BLACK)
-        
+    def __init__(self, wri):
         # Initialize physical buttons from hardware_setup.py
         self.keyA = Pushbutton(Pin(15, Pin.IN, Pin.PULL_UP))
         self.keyB = Pushbutton(Pin(17, Pin.IN, Pin.PULL_UP))  
         self.keyX = Pushbutton(Pin(19, Pin.IN, Pin.PULL_UP))
         self.keyY = Pushbutton(Pin(21, Pin.IN, Pin.PULL_UP))
         
-        # Create writer for buttons
-        self.wri = CWriter(ssd, font, WHITE, BLACK, verbose=False)
+        # Use the provided writer
+        self.wri = wri
         
-        # Create GUI buttons positioned within the window
+        # Create GUI buttons positioned on screen
         self.gui_buttons = []
         self.setup_gui_buttons()
         self.bind_physical_to_gui()
@@ -54,20 +49,19 @@ class PhysicalButtonOverlay(Window):
         print("🎮 Physical button overlay initialized!")
     
     def setup_gui_buttons(self):
-        """Create circular GUI buttons in vertical column"""
-        # Button positions within the window (relative to window, not screen)
-        # Centered horizontally in 35px wide window, spaced vertically
+        """Create circular GUI buttons in vertical column on right edge"""
+        # Button positions on absolute screen coordinates (right edge)
         button_configs = [
-            {'label': 'A', 'row': 15, 'callback': self.button_a_pressed},
-            {'label': 'B', 'row': 75, 'callback': self.button_b_pressed}, 
-            {'label': 'X', 'row': 135, 'callback': self.button_x_pressed},
-            {'label': 'Y', 'row': 195, 'callback': self.button_y_pressed}
+            {'label': 'A', 'row': 15, 'col': 208, 'callback': self.button_a_pressed},
+            {'label': 'B', 'row': 75, 'col': 208, 'callback': self.button_b_pressed}, 
+            {'label': 'X', 'row': 135, 'col': 208, 'callback': self.button_x_pressed},
+            {'label': 'Y', 'row': 195, 'col': 208, 'callback': self.button_y_pressed}
         ]
         
         for config in button_configs:
             btn = Button(self.wri, 
                         row=config['row'], 
-                        col=5,  # Centered in 35px window (35/2 - 15/2 = ~5)
+                        col=config['col'],
                         text=config['label'],
                         callback=config['callback'],
                         shape=CIRCLE,
