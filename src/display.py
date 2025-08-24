@@ -131,8 +131,8 @@ class PhysicalButtonOverlay:
         button_configs = [
             {'label': 'A', 'row': 15, 'col': 208, 'callback': self.button_a_pressed, 'color': RED},
             {'label': 'B', 'row': 75, 'col': 208, 'callback': self.button_b_pressed, 'color': BLUE}, 
-            {'label': 'X', 'row': 135, 'col': 208, 'callback': self.button_x_pressed, 'color': CYAN},
-            {'label': 'Y', 'row': 195, 'col': 208, 'callback': self.button_y_pressed, 'color': GREEN}
+            {'label': 'X', 'row': 135, 'col': 208, 'callback': self.button_x_pressed, 'color': DARKBLUE},
+            {'label': 'Y', 'row': 195, 'col': 208, 'callback': self.button_y_pressed, 'color': DARKGREEN}
         ]
         
         for config in button_configs:
