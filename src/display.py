@@ -3,6 +3,7 @@ from gui.widgets import Label, Button, CloseButton
 from gui.core.writer import CWriter
 from gui.primitives.pushbutton import Pushbutton
 import gui.fonts.font14 as font
+import gui.fonts.icons as icons
 from gui.core.colors import *
 from machine import Pin
 import uasyncio as asyncio
@@ -115,8 +116,8 @@ class PhysicalButtonOverlay:
         self.keyX = Pushbutton(Pin(19, Pin.IN, Pin.PULL_UP))
         self.keyY = Pushbutton(Pin(21, Pin.IN, Pin.PULL_UP))
         
-        # Use the provided writer
-        self.wri = wri
+        # Create icon writer for button icons
+        self.wri_icons = CWriter(ssd, icons, WHITE, BLACK, verbose=False)
         
         # Create GUI buttons positioned on screen
         self.gui_buttons = []
@@ -128,18 +129,19 @@ class PhysicalButtonOverlay:
     def setup_gui_buttons(self):
         """Create circular GUI buttons in vertical column on right edge"""
         # Button positions on absolute screen coordinates (right edge)
+        # Icon mapping: A=Replay(D), B=Skip(C), X=New(E), Y=Play(F)
         button_configs = [
-            {'label': 'A', 'row': 15, 'col': 208, 'callback': self.button_a_pressed, 'color': RED},
-            {'label': 'B', 'row': 75, 'col': 208, 'callback': self.button_b_pressed, 'color': BLUE}, 
-            {'label': 'X', 'row': 135, 'col': 208, 'callback': self.button_x_pressed, 'color': DARKBLUE},
-            {'label': 'Y', 'row': 195, 'col': 208, 'callback': self.button_y_pressed, 'color': DARKGREEN}
+            {'label': 'D', 'row': 15, 'col': 208, 'callback': self.button_a_pressed, 'color': RED},      # A → Replay
+            {'label': 'C', 'row': 75, 'col': 208, 'callback': self.button_b_pressed, 'color': BLUE},     # B → Skip
+            {'label': 'E', 'row': 135, 'col': 208, 'callback': self.button_x_pressed, 'color': DARKBLUE},# X → New
+            {'label': 'F', 'row': 195, 'col': 208, 'callback': self.button_y_pressed, 'color': DARKGREEN}# Y → Play
         ]
         
         for config in button_configs:
-            btn = PassiveButton(self.wri, 
+            btn = PassiveButton(self.wri_icons,  # Use icon writer for icons
                                row=config['row'], 
                                col=config['col'],
-                               text=config['label'],
+                               text=config['label'],  # Icon character (D, C, E, F)
                                callback=config['callback'],
                                shape=CIRCLE,
                                height=25,
