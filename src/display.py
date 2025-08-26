@@ -109,6 +109,9 @@ def start_display():
 class PhysicalButtonOverlay:
     """Configurable physical button overlay with GUI buttons on right side of screen"""
     
+    # Class-level storage for singleton-like behavior
+    _instance = None
+    
     def __init__(self, wri, button_config=None):
         """
         Initialize physical button overlay with configurable GUI buttons
@@ -117,13 +120,20 @@ class PhysicalButtonOverlay:
             wri: Text writer for regular fonts
             button_config: Dict configuring which GUI buttons to show:
                 {
-                    'A': {'visible': True, 'icon': 'D', 'color': RED, 'callback': self.method},
-                    'B': {'visible': False},
-                    'X': {'visible': True, 'icon': 'E', 'color': BLUE, 'callback': self.method},
-                    'Y': {'visible': True, 'icon': 'F', 'color': GREEN, 'callback': self.method}
+                    'A': {'icon': 'D', 'color': RED, 'callback': self.method},
+                    'B': {'icon': 'C', 'color': BLUE, 'callback': self.method},
+                    'X': {'icon': 'E', 'color': DARKBLUE, 'callback': self.method},
+                    'Y': {'icon': 'F', 'color': GREEN, 'callback': self.method}
                 }
         """
-        # Initialize physical buttons from hardware_setup.py
+        # Clean up previous instance if it exists
+        if PhysicalButtonOverlay._instance is not None:
+            PhysicalButtonOverlay._instance.cleanup()
+        
+        # Store this instance
+        PhysicalButtonOverlay._instance = self
+        
+        # Initialize physical buttons from hardware_setup.py (reuse if possible)
         self.keyA = Pushbutton(Pin(15, Pin.IN, Pin.PULL_UP))  # Back/Cancel button
         self.keyB = Pushbutton(Pin(17, Pin.IN, Pin.PULL_UP))  # Skip button
         self.keyX = Pushbutton(Pin(19, Pin.IN, Pin.PULL_UP))  # New button
@@ -141,6 +151,17 @@ class PhysicalButtonOverlay:
         self.bind_physical_to_gui()
         
         print(f"🎮 Physical button overlay initialized with {len(self.gui_buttons)} buttons!")
+    
+    def cleanup(self):
+        """Clean up button bindings to prevent double-triggers"""
+        try:
+            # Clear button callbacks by setting them to False (disables callback)
+            self.keyA.release_func(False)
+            self.keyB.release_func(False) 
+            self.keyX.release_func(False)
+            print("🧹 Cleaned up previous button bindings")
+        except:
+            pass  # Ignore errors during cleanup
     
     def setup_gui_buttons(self):
         """Create circular GUI buttons for each configured button"""
