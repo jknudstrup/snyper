@@ -169,12 +169,14 @@ class PhysicalButtonOverlay:
     
     def bind_physical_to_gui(self):
         """Bind physical button presses to trigger GUI button actions"""
-        self.keyA.press_func(self.back_button_pressed)  # A = Back/Cancel (always)
-        self.keyB.press_func(self.trigger_physical_button, ('B',))
-        self.keyX.press_func(self.trigger_physical_button, ('X',))  
+        # Only bind A button if it's configured (use release_func for single trigger)
+        if 'A' in self.button_config:
+            self.keyA.release_func(self.back_button_pressed)  # A = Back/Cancel (when configured)
+        self.keyB.release_func(self.trigger_physical_button, ('B',))
+        self.keyX.release_func(self.trigger_physical_button, ('X',))  
         # Y button now handled by GUI navigation system as 'sel'
         
-        print("🔗 Physical buttons bound: A=Back, B/X=Configurable, Y=Sel")
+        print("🔗 Physical buttons bound: A=Back (if configured), B/X=Configurable, Y=Sel")
     
     def trigger_physical_button(self, button_name):
         """Handle physical button press with optional visual feedback"""
