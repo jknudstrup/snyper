@@ -132,53 +132,24 @@ class PhysicalButtonOverlay:
         # Create icon writer for button icons
         self.wri_icons = CWriter(ssd, icons, WHITE, BLACK, verbose=False)
         
-        # Store button configuration (default to main screen config if none provided)
-        self.button_config = button_config or self.get_default_config()
+        # Store button configuration (empty dict if none provided)
+        self.button_config = button_config or {}
         
         # Create GUI buttons positioned on screen
         self.gui_buttons = []
         self.setup_gui_buttons()
         self.bind_physical_to_gui()
         
-        print(f"🎮 Physical button overlay initialized with {len(self.gui_buttons)} visible buttons!")
-    
-    def get_default_config(self):
-        """Default configuration: main screen with only Y button visible"""
-        return {
-            'A': {'visible': False},  # A = Back (physical only)
-            'B': {'visible': False},  # B = Skip (physical only)
-            'X': {'visible': False},  # X = New (physical only)  
-            'Y': {'visible': True, 'icon': 'F', 'color': DARKGREEN, 'callback': self.button_y_pressed}  # Y = Select indicator
-        }
-    
-    @staticmethod
-    def get_debug_config():
-        """Configuration for debug screen: show all buttons"""
-        return {
-            'A': {'visible': True, 'icon': 'D', 'color': RED, 'callback': lambda b: print("🔄 Debug: Replay")},
-            'B': {'visible': True, 'icon': 'C', 'color': BLUE, 'callback': lambda b: print("⏭️ Debug: Skip")},
-            'X': {'visible': True, 'icon': 'E', 'color': DARKBLUE, 'callback': lambda b: print("🆕 Debug: New")},
-            'Y': {'visible': True, 'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: print("▶️ Debug: Play")}
-        }
-    
-    @staticmethod
-    def get_game_config():
-        """Configuration for game screen: show game control buttons"""
-        return {
-            'A': {'visible': True, 'icon': 'A', 'color': RED, 'callback': lambda b: print("🛑 Game: Stop")},      # A = Stop
-            'B': {'visible': True, 'icon': 'B', 'color': BLUE, 'callback': lambda b: print("⏸️ Game: Pause")},    # B = Pause  
-            'X': {'visible': False},  # X = Not used in game
-            'Y': {'visible': True, 'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: print("▶️ Game: Play")} # Y = Play
-        }
+        print(f"🎮 Physical button overlay initialized with {len(self.gui_buttons)} buttons!")
     
     def setup_gui_buttons(self):
-        """Create circular GUI buttons based on configuration"""
+        """Create circular GUI buttons for each configured button"""
         positions = {'A': 15, 'B': 75, 'X': 135, 'Y': 195}  # Row positions for each button
         
-        for button_name, row in positions.items():
-            config = self.button_config.get(button_name, {})
-            
-            if config.get('visible', False):
+        # Only create buttons that are explicitly configured
+        for button_name, config in self.button_config.items():
+            if button_name in positions:
+                row = positions[button_name]
                 btn = PassiveButton(
                     self.wri_icons,
                     row=row,
@@ -194,7 +165,7 @@ class PhysicalButtonOverlay:
                 )
                 self.gui_buttons.append({'name': button_name, 'button': btn})
         
-        print(f"📱 Created {len(self.gui_buttons)} configurable GUI buttons")
+        print(f"📱 Created {len(self.gui_buttons)} configured GUI buttons")
     
     def bind_physical_to_gui(self):
         """Bind physical button presses to trigger GUI button actions"""
@@ -207,6 +178,11 @@ class PhysicalButtonOverlay:
     
     def trigger_physical_button(self, button_name):
         """Handle physical button press with optional visual feedback"""
+        # Check if button is configured (only configured buttons exist now)
+        if button_name not in self.button_config:
+            print(f"🚫 Physical button {button_name} press ignored (button not configured)")
+            return
+        
         # Find GUI button for this physical button
         gui_button_info = next((item for item in self.gui_buttons if item['name'] == button_name), None)
         
@@ -214,11 +190,8 @@ class PhysicalButtonOverlay:
             # Trigger visual feedback and callback
             gui_button_info['button'].trigger()
         else:
-            # Physical button only - call default handlers
-            if button_name == 'B':
-                self.button_b_pressed(None)
-            elif button_name == 'X':
-                self.button_x_pressed(None)
+            # This shouldn't happen since we only create buttons for configured items
+            print(f"⚠️ Warning: Button {button_name} configured but no GUI button found")
     
     def back_button_pressed(self):
         """Handle A button as back/cancel button like CloseButton"""

@@ -6,7 +6,7 @@ from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
 from hardware_setup import ssd
-import urequests
+from display import PhysicalButtonOverlay
 
 class DebugScreen(Screen):
     """Debug Screen"""  
@@ -39,7 +39,23 @@ class DebugScreen(Screen):
         col += 80
         self.selected_target_label = Label(wri, row, col, "None", fgcolor=WHITE)
         
-        # Back functionality now handled by physical A button
+        # Ping status display
+        row += 30
+        col = 2
+        Label(wri, row, col, "Status:", fgcolor=YELLOW)
+        col += 60
+        self.ping_status = Label(wri, row, col, "Ready", fgcolor=GREEN)
+        
+        # Debug screen button config: show all buttons for testing
+        button_config = {
+            'A': {'icon': 'D', 'color': RED, 'callback': lambda b: None},  # A = Back (visual indicator)
+            'B': {'icon': 'C', 'color': BLUE, 'callback': lambda b: print("⏭️ Debug: Skip")},
+            'X': {'icon': 'E', 'color': DARKBLUE, 'callback': lambda b: print("🆕 Debug: New")},
+            'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: print("▶️ Debug: Play")}
+        }
+        
+        # Initialize physical button overlay
+        self.button_overlay = PhysicalButtonOverlay(wri, button_config)
     
     def ping_targets(self, button, arg):
         """PING ALL THE TARGETS - with cleanup via controller"""

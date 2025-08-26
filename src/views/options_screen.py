@@ -6,6 +6,7 @@ from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
 from hardware_setup import ssd
+from display import PhysicalButtonOverlay
 
 class OptionsScreen(Screen):
     """Options and Configuration Screen"""
@@ -28,7 +29,14 @@ class OptionsScreen(Screen):
         row += 30
         Button(wri, row, col, text="Device Config", callback=self.device_config, args=("device",), height=25)
         
-        # Back functionality now handled by physical A button
+        # Options screen button config: show back button and select button  
+        button_config = {
+            'A': {'icon': 'D', 'color': RED, 'callback': lambda b: None},      # A = Back (visual indicator)
+            'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None} # Y = Select indicator
+        }
+        
+        # Initialize physical button overlay
+        self.button_overlay = PhysicalButtonOverlay(wri, button_config)
     
     def wifi_settings(self, button, arg):
         print("📶 Opening WiFi settings...")

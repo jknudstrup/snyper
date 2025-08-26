@@ -51,8 +51,13 @@ class MainScreen(Screen):
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
-        # Initialize physical button overlay with writer
-        self.button_overlay = PhysicalButtonOverlay(wri)
+        # Main screen button config: only show Y (select) button as indicator
+        button_config = {
+            'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None}  # Y = Select indicator
+        }
+        
+        # Initialize physical button overlay with writer and config
+        self.button_overlay = PhysicalButtonOverlay(wri, button_config)
         print("✨ MainScreen with physical button overlay ready!")
         
     
