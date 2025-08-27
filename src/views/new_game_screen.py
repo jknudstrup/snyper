@@ -7,11 +7,13 @@ from gui.core.colors import *
 import gui.fonts.font14 as font14
 from hardware_setup import ssd
 from display import PhysicalButtonOverlay
+from views.screen_helpers import navigate_to_main
 
 class NewGameScreen(Screen):
     """New Game Setup Screen"""
-    def __init__(self):
+    def __init__(self, controller=None):
         super().__init__()
+        self.controller = controller
         wri = CWriter(ssd, font14, GREEN, BLACK, verbose=False)
         
         # Title
@@ -30,7 +32,7 @@ class NewGameScreen(Screen):
         
         # New Game screen button config: show back button and select button
         button_config = {
-            'A': {'icon': 'D', 'color': RED, 'callback': lambda b: None},      # A = Back (visual indicator)
+            'A': {'icon': 'D', 'color': RED, 'callback': lambda b: navigate_to_main(self.controller)},      # A = Back to Main
             'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None} # Y = Select indicator
         }
         

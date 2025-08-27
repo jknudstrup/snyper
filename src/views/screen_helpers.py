@@ -9,3 +9,9 @@ def navigate_to_screen(screen_class, controller=None):
         else:
             Screen.change(screen_class)
     return callback
+
+def navigate_to_main(controller):
+    """Navigate back to MainScreen with controller"""
+    from views.main_screen import MainScreen  # Import here to avoid circular import
+    print("🔄 Navigating back to MainScreen")
+    Screen.change(MainScreen, args=(controller,))

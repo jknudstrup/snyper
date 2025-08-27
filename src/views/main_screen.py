@@ -44,10 +44,10 @@ class MainScreen(Screen):
         # Navigation buttons (increased spacing for font14)
         row = 60
         col = 2
-        Button(wri, row, col, text="New Game", callback=navigate_to_screen(NewGameScreen), args=("new_game",), height=25)
+        Button(wri, row, col, text="New Game", callback=navigate_to_screen(NewGameScreen, self.controller), args=("new_game",), height=25)
         
         row += 40
-        Button(wri, row, col, text="Options", callback=navigate_to_screen(OptionsScreen), args=("options",), height=25)
+        Button(wri, row, col, text="Options", callback=navigate_to_screen(OptionsScreen, self.controller), args=("options",), height=25)
         
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
@@ -67,9 +67,13 @@ class MainScreen(Screen):
         if not self.controller:
             print("⚠️ No controller provided - skipping server tasks")
             return
-            
-        print("🚀 Registering HTTP server task with GUI event loop...")
-        self.reg_task(self.controller.start_server())
         
+        # Only start server if it's not already running
+        if self.controller._server_task is None:
+            print("🚀 Registering HTTP server task with GUI event loop...")
+            self.reg_task(self.controller.start_server())
+        else:
+            print("🌐 HTTP server already running - skipping startup")
+            
         print("🎮 Registering game loop task with GUI event loop...")  
         self.reg_task(self.controller.start_game_loop())
