@@ -56,7 +56,6 @@ class TargetServer:
         @self.app.route('/stand_up')
         async def stand_up(request):
             """Command target to stand up"""
-            await emit_event(EventTypes.TARGET_CONTROL, 'target_server', action='stand_up')
             print(f"🎯 Target {self.node_id} standing up - ready for action!")
             
             response_data = {"status": "standing", "target_id": self.node_id}
@@ -65,7 +64,6 @@ class TargetServer:
         @self.app.route('/lay_down')
         async def lay_down(request):
             """Command target to lay down"""
-            await emit_event(EventTypes.TARGET_CONTROL, 'target_server', action='lay_down')
             print(f"🎯 Target {self.node_id} laying down - taking cover!")
             
             response_data = {"status": "down", "target_id": self.node_id}
@@ -78,8 +76,6 @@ class TargetServer:
                 data = request.json
                 duration = data.get('duration', 5)  # Default 5 seconds
                 
-                await emit_event(EventTypes.TARGET_CONTROL, 'target_server', 
-                               action='activate', duration=duration)
                 print(f"🎯 Target {self.node_id} activated for {duration} seconds - let's rock!")
                 
                 response_data = {
@@ -106,8 +102,6 @@ class TargetServer:
             
             if response.status_code == 200:
                 print(f"✅ Successfully registered target {self.node_id} with master!")
-                await emit_event(EventTypes.CLIENT_CONNECTED, 'target_server', 
-                               client_id=self.node_id)
             else:
                 print(f"⚠️  Registration failed: {response.status_code}")
             
