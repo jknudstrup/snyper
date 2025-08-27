@@ -4,6 +4,9 @@
 
 set -e  # Exit on any error
 
+# Activate Python virtual environment
+source snyper_env/bin/activate
+
 # Load device configs
 if [ -f "config.conf" ]; then
     source config.conf
