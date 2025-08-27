@@ -7,6 +7,8 @@ from gui.core.colors import *
 import gui.fonts.font14 as font14
 from hardware_setup import ssd
 from display import PhysicalButtonOverlay
+import json
+import machine
 
 class DebugScreen(Screen):
     """Debug Screen"""  
@@ -37,6 +39,9 @@ class DebugScreen(Screen):
         
         row += 35
         Button(wri, row, col, text="Lower All", callback=self.lower_all_targets, args=("lower_all",), height=25)
+        
+        row += 35
+        Button(wri, row, col, text="Disable", callback=self.disable_device, fgcolor=RED, height=25)
         
         # Selected target display
         # row += 40
@@ -175,6 +180,25 @@ class DebugScreen(Screen):
             
         except Exception as e:
             print(f"💥 Lower all operation failed: {e}")
+    
+    def disable_device(self, button):
+        """DISABLE DEVICE - set to disable mode and reset"""
+        print("🚫 DISABLE DEVICE SEQUENCE INITIATED!")
+        
+        try:
+            # Write disable state to device_id.json
+            disable_config = {"node_id": "disable"}
+            
+            with open("device_id.json", "w") as f:
+                json.dump(disable_config, f)
+            
+            print("✅ Device set to disable mode - resetting...")
+            
+            # Hard reset the device
+            machine.reset()
+            
+        except Exception as e:
+            print(f"💥 Disable operation failed: {e}")
     
     def get_target_list(self):
         """Get list of target names for dropdown"""
