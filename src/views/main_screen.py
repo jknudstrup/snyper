@@ -8,16 +8,17 @@ import gui.fonts.font14 as font14
 import gui.fonts.freesans20 as freesans20
 from hardware_setup import ssd
 from display import PhysicalButtonOverlay
+from views.screen_helpers import navigate_to_screen
 
-def navigate_to_screen(screen_class, controller=None):
-    """Helper function to navigate to a screen"""
-    def callback(button, arg):
-        print(f"🔄 Navigating to {screen_class.__name__}")
-        if controller and screen_class.__name__ == 'DebugScreen':
-            Screen.change(screen_class, args=(controller,))
-        else:
-            Screen.change(screen_class)
-    return callback
+# def navigate_to_screen(screen_class, controller=None):
+#     """Helper function to navigate to a screen"""
+#     def callback(button, arg):
+#         print(f"🔄 Navigating to {screen_class.__name__}")
+#         if controller and screen_class.__name__ == 'DebugScreen':
+#             Screen.change(screen_class, args=(controller,))
+#         else:
+#             Screen.change(screen_class)
+#     return callback
 
 class MainScreen(Screen):
     """SNYPER Main Menu - Navigation Hub"""
