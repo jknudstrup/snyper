@@ -6,6 +6,7 @@ import urequests
 from config import config
 from events import event_bus, emit_event, EventTypes
 from helpers import reset_network_interface
+from target_interface import raise_target, lower_target
 
 def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -58,6 +59,9 @@ class TargetServer:
             """Command target to stand up"""
             print(f"🎯 Target {self.node_id} standing up - ready for action!")
             
+            # Execute hardware raise command
+            raise_target()
+            
             response_data = {"status": "standing", "target_id": self.node_id}
             return Response(json.dumps(response_data))
 
@@ -65,6 +69,9 @@ class TargetServer:
         async def lay_down(request):
             """Command target to lay down"""
             print(f"🎯 Target {self.node_id} laying down - taking cover!")
+            
+            # Execute hardware lower command
+            lower_target()
             
             response_data = {"status": "down", "target_id": self.node_id}
             return Response(json.dumps(response_data))
