@@ -17,7 +17,7 @@ def connect_to_wifi(ssid, password):
     wlan.active(True)
     wlan.connect(ssid, password)
 
-    max_wait = 10
+    max_wait = 30
     while max_wait > 0:
         if wlan.status() < 0 or wlan.status() >= 3:
             break
