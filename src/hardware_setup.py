@@ -56,6 +56,7 @@ keyY= Pin(21 ,Pin.IN,Pin.PULL_UP)
 # left = Pin(16,Pin.IN,Pin.PULL_UP)
 # right = Pin(20,Pin.IN,Pin.PULL_UP)
 # ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
+ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 
 from gui.core.ugui import Display
 
@@ -63,7 +64,8 @@ from gui.core.ugui import Display
 # The `micropython-micro-gui` library uses a specific button layout.
 # Based on the example, we'll map your existing button pins to the library's expected inputs.
 nxt = Pin(20, Pin.IN, Pin.PULL_UP) # Using your 'right' button for next
-sel = Pin(21, Pin.IN, Pin.PULL_UP) # Using your 'keyY' button for select
+sel = ctrl
+# sel = Pin(21, Pin.IN, Pin.PULL_UP) # Using your 'keyY' button for select
 prev = Pin(16, Pin.IN, Pin.PULL_UP) # Using your 'left' button for previous
 increase = Pin(2, Pin.IN, Pin.PULL_UP) # Using your 'up' button for increase
 decrease = Pin(18, Pin.IN, Pin.PULL_UP) # Using your 'down' button for decrease

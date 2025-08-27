@@ -59,7 +59,7 @@ class DebugScreen(Screen):
         
         # Debug screen button config: show all buttons for testing
         button_config = {
-            'A': {'icon': 'D', 'color': RED, 'callback': lambda b: self._navigate_to_main()},  # A = Back to Main
+            'A': {'icon': 'D', 'color': RED, 'callback': self._navigate_to_main},  # A = Back to Main
             'B': {'icon': 'C', 'color': BLUE, 'callback': lambda b: print("⏭️ Debug: Skip")},
             'X': {'icon': 'E', 'color': DARKBLUE, 'callback': lambda b: print("🆕 Debug: New")},
             'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: print("▶️ Debug: Play")}
@@ -225,10 +225,7 @@ class DebugScreen(Screen):
         self.target_dropdown.update()
         print(f"🔄 Target dropdown refreshed: {len(new_elements)} targets available")
     
-    def _navigate_to_main(self):
+    def _navigate_to_main(self, button):
         """Navigate back to MainScreen with controller"""
-        # from views.main_screen import MainScreen  # Import here to avoid circular import
-        # print("🔄 Navigating back to MainScreen")
-        # Screen.change(MainScreen, args=(self.controller,))
         navigate_to_main(self.controller)
     

@@ -33,7 +33,7 @@ class OptionsScreen(Screen):
         
         # Options screen button config: show back button and select button  
         button_config = {
-            'A': {'icon': 'D', 'color': RED, 'callback': lambda b: navigate_to_main(self.controller)},      # A = Back to Main
+            'A': {'icon': 'D', 'color': RED, 'callback': self._back_to_main},      # A = Back to Main
             'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None} # Y = Select indicator
         }
         
@@ -47,3 +47,7 @@ class OptionsScreen(Screen):
     def device_config(self, button, arg):
         print("⚙️ Opening device configuration...")
         # TODO: Implement device configuration
+    
+    def _back_to_main(self, button):
+        """Navigate back to MainScreen - breaks circular reference"""
+        navigate_to_main(self.controller)

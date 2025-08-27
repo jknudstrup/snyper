@@ -30,14 +30,18 @@ class NewGameScreen(Screen):
         row += 30
         Button(wri, row, col, text="Custom Game", callback=self.start_custom_game, args=("custom",), height=25)
         
+        # Add Back button for navigation testing
+        row += 40
+        Button(wri, row, col, text="Back to Main", callback=self._back_to_main, args=(), height=25)
+        
         # New Game screen button config: show back button and select button
-        button_config = {
-            'A': {'icon': 'D', 'color': RED, 'callback': lambda b: navigate_to_main(self.controller)},      # A = Back to Main
-            'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None} # Y = Select indicator
-        }
+        # button_config = {
+        #     'A': {'icon': 'D', 'color': RED, 'callback': self._back_to_main},      # A = Back to Main
+        #     'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None} # Y = Select indicator
+        # }
         
         # Initialize physical button overlay
-        self.button_overlay = PhysicalButtonOverlay(wri, button_config)
+        # self.button_overlay = PhysicalButtonOverlay(wri, button_config)
     
     def start_quick_game(self, button, arg):
         print("🎮 Starting quick game...")
@@ -46,3 +50,7 @@ class NewGameScreen(Screen):
     def start_custom_game(self, button, arg):
         print("🎮 Starting custom game...")
         # TODO: Implement custom game setup
+    
+    def _back_to_main(self, button):
+        """Navigate back to MainScreen - breaks circular reference"""
+        navigate_to_main(self.controller)
