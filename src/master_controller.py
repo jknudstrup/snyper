@@ -94,25 +94,6 @@ class MasterController:
         self._server_task = server_task()
         return self._server_task
     
-    def start_game_loop(self):
-        """Start the game logic loop"""
-        async def game_loop_task():
-            print("🎯 Game loop starting through controller!")
-            
-            while True:
-                if self.game_state.game_running:
-                    print("🎮 Game tick - maintaining operational readiness...")
-                    
-                    # Example: Pop up a target every 3 seconds during game
-                    if len(self.game_state.active_targets) < 3:  # Max 3 targets
-                        target_id = f"target_{len(self.game_state.active_targets)}"
-                        self.game_state.active_targets.append(target_id)
-                        print(f"🎯 Target {target_id} deployed!")
-                
-                await asyncio.sleep(1.0)  # Strategic pause between operations
-        
-        self._game_loop_task = game_loop_task()
-        return self._game_loop_task
     
     def register_target(self, client_id, client_ip):
         """Register a new target client"""

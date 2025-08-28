@@ -6,7 +6,7 @@ from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
 from hardware_setup import ssd
-from display import PhysicalButtonOverlay, ButtonA, ButtonY
+from display import ButtonA, ButtonY
 from views.screen_helpers import navigate_to_main
 
 class NewGameScreen(Screen):
@@ -35,12 +35,14 @@ class NewGameScreen(Screen):
         self.button_y = ButtonY(wri)  # Y = Select indicator
     
     def start_quick_game(self, button, arg):
-        print("🎮 Starting quick game...")
+        # print("🎮 Starting quick game...")
         # TODO: Implement game start logic
+        pass
         
     def start_custom_game(self, button, arg):
-        print("🎮 Starting custom game...")
+        # print("🎮 Starting custom game...")
         # TODO: Implement custom game setup
+        pass
     
     def _back_to_main(self, button):
         """Navigate back to MainScreen - breaks circular reference"""

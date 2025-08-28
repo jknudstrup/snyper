@@ -7,19 +7,9 @@ from gui.core.colors import *
 import gui.fonts.font14 as font14
 import gui.fonts.freesans20 as freesans20
 from hardware_setup import ssd
-from display import PhysicalButtonOverlay, ButtonY
+from display import ButtonY
 from views.screen_helpers import navigate_to_screen
 import gc
-
-# def navigate_to_screen(screen_class, controller=None):
-#     """Helper function to navigate to a screen"""
-#     def callback(button, arg):
-#         print(f"🔄 Navigating to {screen_class.__name__}")
-#         if controller and screen_class.__name__ == 'DebugScreen':
-#             Screen.change(screen_class, args=(controller,))
-#         else:
-#             Screen.change(screen_class)
-#     return callback
 
 class MainScreen(Screen):
     """SNYPER Main Menu - Navigation Hub"""
@@ -55,7 +45,7 @@ class MainScreen(Screen):
         
         # Create individual physical buttons - just Y button for visual indicator
         self.button_y = ButtonY(wri)  # Visual select indicator only
-        print("✨ MainScreen with individual buttons ready!")
+        # print("✨ MainScreen with individual buttons ready!")
         
     
     def _start_server_tasks(self):
@@ -64,27 +54,13 @@ class MainScreen(Screen):
             print("⚠️ No controller provided - skipping server tasks")
             return
         
-        print(f"💾 RAM before server tasks: {gc.mem_free()}")
+        # print(f"💾 RAM before server tasks: {gc.mem_free()}")
         
         # Only start server if it's not already running
         if self.controller._server_task is None:
-            print("🚀 Registering HTTP server task with GUI event loop...")
+            # print("🚀 Registering HTTP server task with GUI event loop...")
             self.reg_task(self.controller.start_server())
-            print(f"💾 RAM after server task registration: {gc.mem_free()}")
-        else:
-            print("🌐 HTTP server already running - skipping startup")
+            # print(f"💾 RAM after server task registration: {gc.mem_free()}")
             
-        # Only start game loop if it's not already running
-        if self.controller._game_loop_task is None:
-            print("🎮 Registering game loop task with GUI event loop...")  
-            self.reg_task(self.controller.start_game_loop())
-            print(f"💾 RAM after game loop task registration: {gc.mem_free()}")
-        else:
-            print("🎮 Game loop already running - skipping startup")
         
-        # Check total task count
-        print(f"🔢 Total GUI tasks registered: {len(self.tasks)}")
-        print(f"🔍 Server task exists: {self.controller._server_task is not None}")
-        print(f"🔍 Game loop task exists: {self.controller._game_loop_task is not None}")
         gc.collect()
-        print(f"💾 RAM after GC: {gc.mem_free()}")

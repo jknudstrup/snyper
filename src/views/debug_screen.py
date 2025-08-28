@@ -6,7 +6,7 @@ from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
 from hardware_setup import ssd
-from display import PhysicalButtonOverlay
+from display import ButtonA, ButtonB, ButtonX, ButtonY
 import json
 import machine
 from views.screen_helpers import navigate_to_main
@@ -57,16 +57,11 @@ class DebugScreen(Screen):
         # col += 60
         # self.ping_status = Label(wri, row, col, "Ready", fgcolor=GREEN)
         
-        # Debug screen button config: show all buttons for testing
-        button_config = {
-            'A': {'icon': 'D', 'color': RED, 'callback': self._navigate_to_main},  # A = Back to Main
-            'B': {'icon': 'C', 'color': BLUE, 'callback': lambda b: print("⏭️ Debug: Skip")},
-            'X': {'icon': 'E', 'color': DARKBLUE, 'callback': lambda b: print("🆕 Debug: New")},
-            'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: print("▶️ Debug: Play")}
-        }
-        
-        # Initialize physical button overlay
-        self.button_overlay = PhysicalButtonOverlay(wri, button_config)
+        # Create individual physical buttons
+        self.button_a = ButtonA(wri, callback=self._navigate_to_main)
+        self.button_b = ButtonB(wri, callback=lambda b: None)  # print("⏭️ Debug: Skip")
+        self.button_x = ButtonX(wri, callback=lambda b: None)  # print("🆕 Debug: New")
+        self.button_y = ButtonY(wri, callback=lambda b: None)  # print("▶️ Debug: Play")
     
     def ping_targets(self, button, arg):
         """PING ALL THE TARGETS - with cleanup via controller"""
@@ -96,7 +91,7 @@ class DebugScreen(Screen):
             
             # Log results
             if alive_count == total_targets:
-                print(f"🎆 ALL {alive_count} targets responded - FLAWLESS VICTORY!")
+                print(f"🎆 ALL {alive_count} targets responded")
             elif alive_count > 0:
                 print(f"⚠️ {alive_count}/{total_targets} targets responded")
             else:
@@ -136,7 +131,7 @@ class DebugScreen(Screen):
             
             # Log results
             if standing_count == total_targets:
-                print(f"🎆 ALL {standing_count} targets are now STANDING - ready for action!")
+                print(f"🎆 ALL {standing_count} targets STANDING")
             elif standing_count > 0:
                 print(f"⚠️ {standing_count}/{total_targets} targets responded and are standing")
             else:
@@ -173,7 +168,7 @@ class DebugScreen(Screen):
             
             # Log results
             if down_count == total_targets:
-                print(f"🎆 ALL {down_count} targets are now DOWN - taking cover!")
+                print(f"🎆 ALL {down_count} targets DOWN")
             elif down_count > 0:
                 print(f"⚠️ {down_count}/{total_targets} targets responded and are down")
             else:

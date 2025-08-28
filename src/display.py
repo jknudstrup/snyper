@@ -290,7 +290,7 @@ class PhysicalButton(PassiveButton):
             try:
                 self.physical_button = Pushbutton(Pin(pin, Pin.IN, Pin.PULL_UP))
                 self.physical_button.release_func(self._on_physical_press)
-                print(f"🔘 {self.__class__.__name__}: Hardware binding created for GPIO {pin}")
+                # print(f"🔘 {self.__class__.__name__}: Hardware binding created for GPIO {pin}")
             except Exception as e:
                 print(f"⚠️ {self.__class__.__name__}: Hardware binding failed: {e}")
                 self.physical_button = None
@@ -299,12 +299,12 @@ class PhysicalButton(PassiveButton):
     
     def _on_physical_press(self):
         """Handle physical button press"""
-        print(f"🔘 {self.__class__.__name__}: Physical press detected")
+        # print(f"🔘 {self.__class__.__name__}: Physical press detected")
         self.trigger()
     
     def _default_callback(self, button):
         """Default behavior if no callback provided"""
-        print(f"🔘 {self.__class__.__name__}: Default callback - no action defined")
+        # print(f"🔘 {self.__class__.__name__}: Default callback - no action defined")
     
     def cleanup(self):
         """Clean up hardware bindings"""
@@ -336,4 +336,4 @@ class ButtonY(PhysicalButton):
     def __init__(self, wri, callback=None, **kwargs):
         # No GPIO pin - handled by GUI system
         super().__init__(wri, pin=None, row=195, text='F', bgcolor=DARKGREEN, callback=callback, **kwargs)
-        print("🟢 ButtonY: Visual indicator only (no hardware binding)")
+        # print("🟢 ButtonY: Visual indicator only (no hardware binding)")
