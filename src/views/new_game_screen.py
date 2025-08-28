@@ -6,7 +6,7 @@ from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
 from hardware_setup import ssd
-from display import PhysicalButtonOverlay
+from display import PhysicalButtonOverlay, ButtonA, ButtonY
 from views.screen_helpers import navigate_to_main
 
 class NewGameScreen(Screen):
@@ -30,18 +30,9 @@ class NewGameScreen(Screen):
         row += 30
         Button(wri, row, col, text="Custom Game", callback=self.start_custom_game, args=("custom",), height=25)
         
-        # Add Back button for navigation testing
-        row += 40
-        Button(wri, row, col, text="Back to Main", callback=self._back_to_main, args=(), height=25)
-        
-        # New Game screen button config: show back button and select button
-        # button_config = {
-        #     'A': {'icon': 'D', 'color': RED, 'callback': self._back_to_main},      # A = Back to Main
-        #     'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None} # Y = Select indicator
-        # }
-        
-        # Initialize physical button overlay
-        # self.button_overlay = PhysicalButtonOverlay(wri, button_config)
+        # Create individual physical buttons
+        self.button_a = ButtonA(wri, callback=self._back_to_main)  # A = Back to Main
+        self.button_y = ButtonY(wri)  # Y = Select indicator
     
     def start_quick_game(self, button, arg):
         print("🎮 Starting quick game...")

@@ -7,7 +7,7 @@ from gui.core.colors import *
 import gui.fonts.font14 as font14
 import gui.fonts.freesans20 as freesans20
 from hardware_setup import ssd
-from display import PhysicalButtonOverlay
+from display import PhysicalButtonOverlay, ButtonY
 from views.screen_helpers import navigate_to_screen
 import gc
 
@@ -53,14 +53,9 @@ class MainScreen(Screen):
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
-        # Main screen button config: only show Y (select) button as indicator
-        # button_config = {
-        #     'Y': {'icon': 'F', 'color': DARKGREEN, 'callback': lambda b: None}  # Y = Select indicator
-        # }
-        
-        # Initialize physical button overlay with writer and config
-        # self.button_overlay = PhysicalButtonOverlay(wri, button_config)
-        print("✨ MainScreen ready (PhysicalButtonOverlay commented out)!")
+        # Create individual physical buttons - just Y button for visual indicator
+        self.button_y = ButtonY(wri)  # Visual select indicator only
+        print("✨ MainScreen with individual buttons ready!")
         
     
     def _start_server_tasks(self):

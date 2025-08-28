@@ -6,13 +6,17 @@
 
 ## CURRENT STATUS
 
-**Mission ACCOMPLISHED**: MasterController Pattern Architecture ✅
+**Current Mission**: **CRITICAL MEMORY LEAK FIX** 🔥
 
-**Planning Document**: `.claude/controller-pattern-plan.md`
+**Planning Document**: `.claude/physical-button-refactor-plan.md`
 
-**Architecture Status**: **COMPLETE** - Controller pattern successfully implemented and operational
+**Issue**: PhysicalButtonOverlay singleton pattern causing ~1.4KB memory leak per navigation cycle + OOM crashes
 
-**Latest Achievement**: Full MasterController system with SystemState/GameState separation, target registration, ping functionality, and target control commands (raise_all/lower_all)
+**Solution**: Replace singleton overlay with individual ButtonA/B/X/Y classes inheriting from PassiveButton
+
+**Status**: **IN PROGRESS** - Refactoring physical button system to eliminate memory leaks
+
+**Previous Achievement**: MasterController Pattern Architecture ✅ - Full system with SystemState/GameState separation, target registration, ping functionality, and target control commands
 
 ## Project Overview
 

@@ -129,6 +129,7 @@ class PhysicalButtonOverlay:
         # Clean up previous instance if it exists
         if PhysicalButtonOverlay._instance is not None:
             PhysicalButtonOverlay._instance.cleanup()
+            PhysicalButtonOverlay._instance = None  # CRITICAL: Clear reference for GC
         
         # Store this instance
         PhysicalButtonOverlay._instance = self
@@ -152,14 +153,21 @@ class PhysicalButtonOverlay:
         
         print(f"🎮 Physical button overlay initialized with {len(self.gui_buttons)} buttons!")
     
+    def __del__(self):
+        """Destructor called when object is garbage collected"""
+        self.cleanup()
+    
     def cleanup(self):
-        """Clean up button bindings to prevent double-triggers"""
+        """Clean up button bindings for proper garbage collection"""
         try:
             # Clear button callbacks by setting them to False (disables callback)
-            self.keyA.release_func(False)
-            self.keyB.release_func(False) 
-            self.keyX.release_func(False)
-            print("🧹 Cleaned up previous button bindings")
+            if hasattr(self, 'keyA'):
+                self.keyA.release_func(False)
+            if hasattr(self, 'keyB'):
+                self.keyB.release_func(False) 
+            if hasattr(self, 'keyX'):
+                self.keyX.release_func(False)
+            print("🧹 Cleaned up button bindings")
         except:
             pass  # Ignore errors during cleanup
     
@@ -251,3 +259,81 @@ def test_display():
     """Non-async test function just like the hello world"""
     print('Simple demo: testing display.')
     Screen.change(BaseScreen)
+
+
+# Individual Physical Button Classes
+# These replace the complex PhysicalButtonOverlay singleton system
+
+class PhysicalButton(PassiveButton):
+    """Base class for physical buttons with hardware GPIO binding"""
+    
+    def __init__(self, wri, pin=None, row=0, text='?', bgcolor=GREY, callback=None, **kwargs):
+        """Initialize physical button with hardware binding"""
+        defaults = {
+            'row': row,
+            'col': 208,
+            'shape': CIRCLE,
+            'height': 25,
+            'width': 25,
+            'text': text,
+            'fgcolor': WHITE,
+            'bgcolor': bgcolor,
+            'litcolor': None,
+            'callback': callback or self._default_callback
+        }
+        defaults.update(kwargs)
+        
+        super().__init__(wri, **defaults)
+        
+        # Create hardware binding if pin specified
+        if pin is not None:
+            try:
+                self.physical_button = Pushbutton(Pin(pin, Pin.IN, Pin.PULL_UP))
+                self.physical_button.release_func(self._on_physical_press)
+                print(f"🔘 {self.__class__.__name__}: Hardware binding created for GPIO {pin}")
+            except Exception as e:
+                print(f"⚠️ {self.__class__.__name__}: Hardware binding failed: {e}")
+                self.physical_button = None
+        else:
+            self.physical_button = None
+    
+    def _on_physical_press(self):
+        """Handle physical button press"""
+        print(f"🔘 {self.__class__.__name__}: Physical press detected")
+        self.trigger()
+    
+    def _default_callback(self, button):
+        """Default behavior if no callback provided"""
+        print(f"🔘 {self.__class__.__name__}: Default callback - no action defined")
+    
+    def cleanup(self):
+        """Clean up hardware bindings"""
+        if self.physical_button:
+            self.physical_button.release_func(False)
+            self.physical_button = None
+
+
+class ButtonA(PhysicalButton):
+    """Physical A button (Back/Cancel) - Red circle"""
+    def __init__(self, wri, callback=None, **kwargs):
+        super().__init__(wri, pin=15, row=15, text='D', bgcolor=RED, callback=callback, **kwargs)
+
+
+class ButtonB(PhysicalButton):
+    """Physical B button (Skip/Next) - Blue circle"""
+    def __init__(self, wri, callback=None, **kwargs):
+        super().__init__(wri, pin=17, row=75, text='C', bgcolor=BLUE, callback=callback, **kwargs)
+
+
+class ButtonX(PhysicalButton):
+    """Physical X button (New/Action) - Dark blue circle"""
+    def __init__(self, wri, callback=None, **kwargs):
+        super().__init__(wri, pin=19, row=135, text='E', bgcolor=DARKBLUE, callback=callback, **kwargs)
+
+
+class ButtonY(PhysicalButton):
+    """Physical Y button (Select indicator) - Green circle - Visual only"""
+    def __init__(self, wri, callback=None, **kwargs):
+        # No GPIO pin - handled by GUI system
+        super().__init__(wri, pin=None, row=195, text='F', bgcolor=DARKGREEN, callback=callback, **kwargs)
+        print("🟢 ButtonY: Visual indicator only (no hardware binding)")
