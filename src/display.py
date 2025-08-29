@@ -8,6 +8,40 @@ from gui.core.colors import *
 from machine import Pin
 import uasyncio as asyncio
 
+# Global GPIO handlers - created once, persist across screens
+_global_button_a = None
+_global_button_b = None  
+_global_button_x = None
+
+def _init_global_buttons():
+    """Initialize global GPIO handlers once"""
+    global _global_button_a, _global_button_b, _global_button_x
+    if _global_button_a is None:
+        try:
+            _global_button_a = Pushbutton(Pin(15, Pin.IN, Pin.PULL_UP))
+            _global_button_a.release_func(_handle_button_a_press)
+            _global_button_b = Pushbutton(Pin(17, Pin.IN, Pin.PULL_UP))
+            _global_button_b.release_func(_handle_button_b_press)
+            _global_button_x = Pushbutton(Pin(19, Pin.IN, Pin.PULL_UP))
+            _global_button_x.release_func(_handle_button_x_press)
+        except Exception as e:
+            print(f"⚠️ Global GPIO setup failed: {e}")
+
+def _handle_button_a_press():
+    """Global A button handler - find current screen's ButtonA and trigger it"""
+    if Screen.current_screen and hasattr(Screen.current_screen, 'button_a'):
+        Screen.current_screen.button_a.trigger()
+
+def _handle_button_b_press():
+    """Global B button handler - find current screen's ButtonB and trigger it"""
+    if Screen.current_screen and hasattr(Screen.current_screen, 'button_b'):
+        Screen.current_screen.button_b.trigger()
+
+def _handle_button_x_press():
+    """Global X button handler - find current screen's ButtonX and trigger it"""  
+    if Screen.current_screen and hasattr(Screen.current_screen, 'button_x'):
+        Screen.current_screen.button_x.trigger()
+
 class PassiveButton(Widget):
     """Non-focusable button for display-only purposes with callback support"""
     lit_time = 1000
@@ -117,10 +151,10 @@ def test_display():
 # These replace the complex PhysicalButtonOverlay singleton system
 
 class PhysicalButton(PassiveButton):
-    """Base class for physical buttons with hardware GPIO binding"""
+    """Base class for physical buttons - visual only, hardware handled globally"""
     
     def __init__(self, wri, pin=None, row=0, text='?', bgcolor=GREY, callback=None, **kwargs):
-        """Initialize physical button with hardware binding"""
+        """Initialize visual button (hardware handled by global GPIO handlers)"""
         defaults = {
             'row': row,
             'col': 208,
@@ -137,33 +171,12 @@ class PhysicalButton(PassiveButton):
         
         super().__init__(wri, **defaults)
         
-        # Create hardware binding if pin specified
-        if pin is not None:
-            try:
-                self.physical_button = Pushbutton(Pin(pin, Pin.IN, Pin.PULL_UP))
-                self.physical_button.release_func(self._on_physical_press)
-                # print(f"🔘 {self.__class__.__name__}: Hardware binding created for GPIO {pin}")
-            except Exception as e:
-                print(f"⚠️ {self.__class__.__name__}: Hardware binding failed: {e}")
-                self.physical_button = None
-        else:
-            self.physical_button = None
-    
-    def _on_physical_press(self):
-        """Handle physical button press"""
-        # print(f"🔘 {self.__class__.__name__}: Physical press detected")
-        self.trigger()
+        # Initialize global GPIO handlers once
+        _init_global_buttons()
     
     def _default_callback(self, button):
         """Default behavior if no callback provided"""
-        # print(f"🔘 {self.__class__.__name__}: Default callback - no action defined")
         pass
-    
-    def cleanup(self):
-        """Clean up hardware bindings"""
-        if hasattr(self, 'physical_button') and self.physical_button:
-            self.physical_button.release_func(False)
-            self.physical_button = None
 
 
 class ButtonA(PhysicalButton):

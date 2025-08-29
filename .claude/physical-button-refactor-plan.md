@@ -47,11 +47,12 @@ PhysicalButton → Pushbutton → interrupt_handler → self._on_physical_press 
 
 ## Proposed Solutions
 
-### Option A: Global GPIO Handler (Recommended)
-Create a single global GPIO manager that doesn't hold screen references:
+### Option A: Global GPIO Handler (IMPLEMENTED ✅)
+**SUCCESSFUL SOLUTION**: Create a single global GPIO manager that doesn't hold screen references:
 - One global `Pushbutton` object per GPIO pin that persists across screens
-- Use event system or weak references to notify current screen
+- Global handlers use `Screen.current_screen` to find and trigger appropriate button
 - Avoid per-screen GPIO object creation entirely
+- **Result**: Memory leak eliminated, physical buttons work correctly
 
 ### Option B: Explicit Cleanup on Screen Change
 Override Screen.REPLACE to explicitly cleanup old screen hardware:
