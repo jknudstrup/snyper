@@ -13,9 +13,13 @@ import gc
 
 class MainScreen(Screen):
     """SNYPER Main Menu - Navigation Hub"""
+    
+    def __del__(self):
+        print(f"💀 MainScreen #{id(self)} destroyed")
     def __init__(self, controller=None):
         super().__init__()
         self.controller = controller
+        print(f"🏗️ MainScreen #{id(self)} created")
         
         # Start the HTTP server and game loop tasks
         self._start_server_tasks()
@@ -43,9 +47,8 @@ class MainScreen(Screen):
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
-        # Create individual physical buttons - just Y button for visual indicator
-        self.button_y = ButtonY(wri)  # Visual select indicator only
-        # print("✨ MainScreen with individual buttons ready!")
+        # self.button_y = ButtonY(wri)  # Visual select indicator only - COMMENTED OUT FOR TESTING
+        print(f"✨ MainScreen #{id(self)} ready! RAM: {gc.mem_free()}")
         
     
     def _start_server_tasks(self):

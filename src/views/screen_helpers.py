@@ -8,8 +8,11 @@ def navigate_to_screen(screen_class, controller=None):
         print(f"RAM: {gc.mem_free()}")
         gc.collect()  # Force GC before navigation
         
-        if controller:
-            Screen.change(screen_class, mode=Screen.REPLACE, args=(controller,))
+        # Get controller from current screen to avoid capturing it in closure
+        current_controller = getattr(Screen.current_screen, 'controller', None) if Screen.current_screen else controller
+        
+        if current_controller:
+            Screen.change(screen_class, mode=Screen.REPLACE, args=(current_controller,))
         else:
             Screen.change(screen_class, mode=Screen.REPLACE)
             

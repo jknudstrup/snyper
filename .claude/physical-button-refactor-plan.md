@@ -9,6 +9,16 @@ Replace the complex PhysicalButtonOverlay singleton system with individual butto
 - **Singleton Issues**: Class-level references prevent Screen.REPLACE from properly cleaning up objects
 - **OOM Crashes**: Creating multiple Pushbutton objects for same GPIO pins causes resource conflicts
 
+## CONFIRMED ROOT CAUSE (2025-08-29)
+**MEMORY LEAK IS DEFINITELY FROM BUTTON IMPLEMENTATION, NOT SCREEN NAVIGATION**
+
+Testing confirmed:
+- ✅ **Navigation with normal buttons**: RAM stabilizes, no leak
+- ❌ **Navigation with display.py buttons**: Memory leak persists
+- **Conclusion**: The issue is specifically in our ButtonA/B/X/Y implementation in display.py
+
+**NOT the navigation callbacks** - screen_helpers.py navigate_to_screen() is clean
+
 ## Proposed Solution
 Create individual ButtonA, ButtonB, ButtonX, ButtonY classes inheriting from PassiveButton, each managing their own hardware and positioning.
 
