@@ -30,8 +30,8 @@
 
 ### Architecture
 
-- **Master**: MasterController-driven system with GUI-first design + WiFi AP + HTTP server + ST7789 display
-- **Targets**: WiFi clients with lightning-fast ping responses + target control endpoints
+- **Master**: MasterController-driven system with GUI-first design + WiFi AP + HTTP server + ST7789 display (Raspberry Pi Pico W)
+- **Targets**: WiFi clients with lightning-fast ping responses + target control endpoints (Raspberry Pi Pico W)
 - **Controller Pattern**: Single MasterController instance manages all system state and operations
 
 ### Screen Navigation System

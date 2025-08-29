@@ -15,20 +15,29 @@ Freeze micropython-micro-gui library into firmware to achieve major RAM savings 
 
 ### Phase 1: MicroPython Build Environment Setup
 
-**Goal**: Establish custom firmware build capability for Raspberry Pi Pico
+**Goal**: Establish custom firmware build capability for Raspberry Pi Pico W
 
 **Steps**:
 
-1. **Clone MicroPython repository** locally
-2. **Install build dependencies** (cross-compilation toolchain for ARM)
-3. **Verify standard build process** works:
+1. ✅ **Clone MicroPython repository** locally  
+2. ✅ **Build mpy-cross** - MicroPython bytecode compiler:
    ```bash
-   cd micropython/ports/rp2
-   make submodules
-   make BOARD=PICO_W
+   cd micropython
+   make -C mpy-cross
    ```
-4. **Test deployment** of standard firmware.uf2 to device
-5. **Confirm device boots** with custom-built firmware
+3. **Install ARM embedded toolchain** (required for C compilation):
+   - Missing standard C library headers (stdlib.h, stdint.h)
+   - Current blocker: Need complete embedded toolchain with newlib
+4. **Alternative approach**: Use .mpy files instead of firmware freezing
+
+### Alternative: .mpy Bytecode Compilation (Recommended)
+
+**Goal**: Achieve RAM savings without custom firmware complexity
+
+**Process**:
+1. **Compile GUI library** to .mpy bytecode files using mpy-cross
+2. **Deploy .mpy files** alongside regular Python code  
+3. **Faster imports + RAM savings** without firmware rebuild complexity
 
 ### Phase 2: Create Freezing Manifest
 
@@ -66,7 +75,7 @@ freeze('/path/to/snyper/src/gui')
 cd micropython/ports/rp2
 MANIFEST='/path/to/snyper/.claude/rp2_snyper_manifest.py'
 make clean
-make -j 8 BOARD=PICO FROZEN_MANIFEST=$MANIFEST
+make -j 8 BOARD=PICO_W FROZEN_MANIFEST=$MANIFEST
 ```
 
 **Deployment**:
