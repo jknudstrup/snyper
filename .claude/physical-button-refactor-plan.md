@@ -19,8 +19,50 @@ Testing confirmed:
 
 **NOT the navigation callbacks** - screen_helpers.py navigate_to_screen() is clean
 
-## Proposed Solution
-Create individual ButtonA, ButtonB, ButtonX, ButtonY classes inheriting from PassiveButton, each managing their own hardware and positioning.
+## FAILED ATTEMPT: __del__ Destructor Approach
+**Tried**: Adding `__del__()` destructor to PhysicalButton class to automatically call `cleanup()`
+**Result**: FAILED - Memory leak persisted, no destruction messages appeared
+**Conclusion**: MicroPython's garbage collector doesn't reliably call `__del__()` or the hardware objects are preventing GC entirely
+
+## FAILED ATTEMPT: Single-Object Design (GPIO Removal)
+**Tried**: Removed separate `Pushbutton` hardware objects, kept only visual Widget
+**Result**: Memory leak FIXED, but physical button functionality LOST
+**Key Finding**: ButtonY (pin=None) works fine, ButtonA (pin=15) breaks when GPIO handling restored
+
+## ROOT CAUSE IDENTIFIED: GPIO Interrupt Circular References
+**Problem**: GPIO interrupt handlers create unbreakable circular references:
+```
+PhysicalButton → Pushbutton → interrupt_handler → self._on_physical_press → PhysicalButton
+```
+
+**Technical Details**:
+1. **Circular Reference**: `self.physical_button.release_func(self._on_physical_press)` stores bound method reference
+2. **Hardware Context**: GPIO interrupts hold references at hardware level, outside Python GC scope  
+3. **Multiple Instances**: Screen.REPLACE creates new instances but old ones can't be GC'd due to active interrupt handlers
+
+**Evidence**: 
+- ✅ Pure visual buttons (ButtonY, pin=None) = no leak
+- ❌ GPIO buttons (ButtonA, pin=15) = immediate leak regression  
+- Zero destruction messages = objects never get garbage collected
+
+## Proposed Solutions
+
+### Option A: Global GPIO Handler (Recommended)
+Create a single global GPIO manager that doesn't hold screen references:
+- One global `Pushbutton` object per GPIO pin that persists across screens
+- Use event system or weak references to notify current screen
+- Avoid per-screen GPIO object creation entirely
+
+### Option B: Explicit Cleanup on Screen Change
+Override Screen.REPLACE to explicitly cleanup old screen hardware:
+- Add manual cleanup call before screen destruction
+- Force hardware interrupt handler removal before GC
+- Requires modifying screen navigation lifecycle
+
+### Option C: Visual-Only + Global Physical Handling
+- Keep all buttons as visual-only (no per-button GPIO objects)
+- Handle ALL physical buttons through global handler in master.py
+- Map physical presses to screen-appropriate actions globally
 
 ## Implementation Plan
 

@@ -157,10 +157,11 @@ class PhysicalButton(PassiveButton):
     def _default_callback(self, button):
         """Default behavior if no callback provided"""
         # print(f"🔘 {self.__class__.__name__}: Default callback - no action defined")
+        pass
     
     def cleanup(self):
         """Clean up hardware bindings"""
-        if self.physical_button:
+        if hasattr(self, 'physical_button') and self.physical_button:
             self.physical_button.release_func(False)
             self.physical_button = None
 

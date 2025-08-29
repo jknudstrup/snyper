@@ -47,7 +47,7 @@ class MainScreen(Screen):
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
-        # self.button_y = ButtonY(wri)  # Visual select indicator only - COMMENTED OUT FOR TESTING
+        self.button_y = ButtonY(wri)  # Visual select indicator only
         print(f"✨ MainScreen #{id(self)} ready! RAM: {gc.mem_free()}")
         
     

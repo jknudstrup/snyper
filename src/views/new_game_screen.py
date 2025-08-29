@@ -34,9 +34,9 @@ class NewGameScreen(Screen):
         row += 40
         Button(wri, row, col, text="Back", callback=self._back_to_main, height=25)
         
-        # Create individual physical buttons - COMMENTED OUT FOR TESTING
-        # self.button_a = ButtonA(wri, callback=self._back_to_main)  # A = Back to Main
-        # self.button_y = ButtonY(wri)  # Y = Select indicator
+        # Create individual physical buttons
+        self.button_a = ButtonA(wri, callback=self._back_to_main)  # A = Back to Main
+        self.button_y = ButtonY(wri)  # Y = Select indicator
     
     def start_quick_game(self, button, arg):
         # print("🎮 Starting quick game...")
