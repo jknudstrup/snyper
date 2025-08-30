@@ -4,3 +4,4 @@ snyper_env
 .extra
 config.conf
 src/device_id.json
+*.uf2
