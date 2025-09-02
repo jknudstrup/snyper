@@ -7,6 +7,6 @@ include("$(MPY_DIR)/ports/rp2/boards/manifest.py")
 # Add networking bundle (includes urequests, json, ssl, requests, etc.)
 require("bundle-networking")
 
-# Freeze GUI library from our trimmed src/gui directory
+# Freeze GUI library preserving package structure
 # This achieves major RAM savings (55KB → 23KB according to library docs)
-freeze("/Users/jimknudstrup/Documents/Projects/snyper/src/gui")
+package("gui", base_path="/Users/jimknudstrup/Documents/Projects/snyper/src")

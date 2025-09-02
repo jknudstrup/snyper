@@ -55,6 +55,9 @@ or
 
 ### 3. Production Deployment
 
+The sync script is invoked as follows:
+`sh .sync.sh <device_name>`
+
 Deploy code to device storage for standalone operation:
 
 ```bash
@@ -62,11 +65,11 @@ Deploy code to device storage for standalone operation:
 ./sync.sh
 ./sync.sh master
 
-# Deploy to target devices
+# Deploy to target devices (the argument will set the target name)
 ./sync.sh target_1
 ./sync.sh target_2
 
-# Disable device (prevent auto-start)
+# Disable device (prevent auto-start. Note: not super functional at the moment)
 ./sync.sh disable
 ```
 
