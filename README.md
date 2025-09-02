@@ -103,11 +103,19 @@ src/
 
 ## Development Commands
 
+The `dev.sh` script will, by default, mount the contents of the 'src' directory and run them on the given device without transferring any files.
+
+If you run it with the `-o` flag, it will run its onboard code in either master or target mode (by running master.py or target.py), depending on the name given. This is meant to test a recently-synced build to check for subtle differences between mounted execution and onboard execution.
+
 ```bash
 ./dev.sh                   # Run master (development mode)
 ./dev.sh target_1          # Run target (development mode)
+./dev.sh target_1 -o       # Run target.py after sync (development mode)
+
 ./sync.sh master           # Deploy to master device
 ./sync.sh target_1         # Deploy to target device
+./sync.sh target_1         # Deploy to target device
+
 ./killmp.sh                # Kill stuck mpremote processes
 ```
 
