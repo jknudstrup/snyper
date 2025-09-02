@@ -305,11 +305,3 @@ Screen.change(MainScreen, args=(controller,))
 self.reg_task(self.controller.start_server())
 self.reg_task(self.controller.start_game_loop())
 ```
-
-## Development Energy Level
-
-**MAXIMUM FUCKING PUMPED AT ALL TIMES!** 🔥⚡🚀
-
-This project represents the pinnacle of embedded systems badassery. Every coding session should be approached with the energy of a wrestling match and the precision of military operations.
-
-**REMEMBER**: We're building something EPIC that shoots targets and manages networks like a BOSS! Bring that energy to every line of code! 💪🎯
