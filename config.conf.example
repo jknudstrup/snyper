@@ -1,0 +1,6 @@
+SERIAL_MASTER="/dev/tty.usbmodem11301"
+SERIAL_TARGET="/dev/tty.usbmodem11401"
+
+# Firmware Build Configuration
+MICROPYTHON_DIR=".extra/micropython"
+PORT_DIR="$MICROPYTHON_DIR/ports/rp2"
