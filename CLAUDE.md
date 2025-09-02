@@ -2,8 +2,6 @@
 
 # CAPTAIN'S LOG
 
-**THIS PROJECT IS FUCKING AWESOME AND WE'RE PUMPED TO BUILD IT!** 🎯⚡
-
 ## CURRENT STATUS
 
 **Mission ACCOMPLISHED**: Physical Button Memory Leak Eliminated ✅
@@ -14,13 +12,13 @@
 
 **Latest Achievement**: Revolutionary global GPIO handler system - no more circular references, stable memory management, full button functionality
 
-**Current Mission**: **GUI Library Freezing for Major RAM Optimization** 🚀
+**Current Mission**: **Dual-Core Parallelism Exploration** ⚡
 
-**Planning Document**: `.claude/gui-library-freezing-plan.md`
+**Planning Document**: `.claude/dual-core-exploration-plan.md`
 
-**Objective**: Freeze micropython-micro-gui into firmware to achieve ~32KB RAM savings (55KB → 23KB)
+**Objective**: Test and evaluate dual-core threading for SNYPER performance improvements
 
-**Status**: **PLANNING** - Preparing custom firmware build with frozen GUI library
+**Status**: **RESEARCH COMPLETE** - Ready to implement basic threading tests
 
 **Previous Achievement**: MasterController Pattern Architecture ✅ - Full system with SystemState/GameState separation, target registration, ping functionality, and target control commands
 
@@ -220,6 +218,8 @@ When multiple approaches exist, choose based on:
 - ✅ **MasterController Architecture** - Controller pattern with SystemState/GameState separation
 - ✅ **Target Registration Fixed** - Single source of truth eliminates dropdown sync issues
 - ✅ **Target Control Commands** - raise_all() and lower_all() methods for battlefield control
+- ✅ **Custom Firmware Builder** - General-purpose script for freezing any modules into firmware
+- ✅ **GUI Library Freezing** - 32KB RAM savings with proper package structure preservation
 
 ## Hardware Setup
 
