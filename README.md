@@ -119,6 +119,47 @@ If you run it with the `-o` flag, it will run its onboard code in either master 
 ./killmp.sh                # Kill stuck mpremote processes
 ```
 
+### 4. Custom Firmware Building
+
+Build optimized MicroPython firmware with frozen Python modules for significant RAM savings:
+
+```bash
+# Build firmware with frozen GUI library (~32KB RAM savings)
+./build_firmware.sh gui
+
+# Build firmware with frozen microdot library
+./build_firmware.sh microdot
+
+# Build firmware with multiple modules
+./build_firmware.sh gui helpers.py
+
+# Build standard firmware (no custom modules frozen)
+./build_firmware.sh
+```
+
+**Firmware Build Features:**
+- **Dynamic manifest generation** - Creates manifest based on command arguments
+- **Smart validation** - Checks that specified files/folders exist in `src/`
+- **Automatic timestamping** - Each build gets unique filename with timestamp
+- **Convenience symlink** - `snyper_firmware_latest.uf2` always points to newest build
+
+**Build Configuration:**
+All paths are configured in `config.conf` (relative to project root):
+```bash
+MICROPYTHON_DIR=".extra/micropython"
+PORT_DIR="$MICROPYTHON_DIR/ports/rp2"
+```
+
+**Deployment Process:**
+1. Put Pico W in BOOTSEL mode (hold BOOTSEL while powering on)
+2. Copy generated `.uf2` file to USB mass storage device
+3. Device reboots with custom firmware containing frozen modules
+
+**Benefits of Frozen Modules:**
+- **RAM savings** - Modules execute from ROM instead of RAM
+- **Faster imports** - Pre-compiled bytecode loads instantly  
+- **Smaller deployment** - Modules embedded directly in firmware
+
 ## Hardware Requirements
 
 - **Raspberry Pi Pico W**: WiFi-enabled microcontroller
