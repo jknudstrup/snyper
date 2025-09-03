@@ -13,7 +13,7 @@ class MasterController:
     """Central controller managing all SNYPER operations"""
     
     def __init__(self):
-        self.server = MasterServer()
+        self.server = MasterServer(on_target_register=self.register_target)
         self._server_task = None
         self._ap = None
         

@@ -72,7 +72,8 @@
 For quick reference, you can look in the 'docs' folder to find:
 
 - gui_library_readme.md: a copy of the original README from the 'micropython-micro-gui' library
-- microdot-readme.md: a copy of the original README for the 'microdot' library
+- microdot-readme.md: a distillation of what we've observed by looking at microdot.py, since the repo's README doesn't really document anything.
+
   If you need to refresh yourself about how to implement something in a given library, look in these files first
 
 ## Development Philosophy

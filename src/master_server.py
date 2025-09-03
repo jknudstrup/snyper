@@ -9,7 +9,7 @@ from helpers import initialize_access_point
 class MasterServer:
     """Master server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
     
-    def __init__(self):
+    def __init__(self, on_target_register=None):
         self.app = Microdot()
         self._ap = None
         
@@ -18,6 +18,9 @@ class MasterServer:
         self.password = config.password  
         self.server_ip = config.server_ip
         self.port = config.port
+        
+        # Callback functions for communicating with controller
+        self.on_target_register = on_target_register
         
         self._setup_routes()
     
@@ -45,28 +48,15 @@ class MasterServer:
             client_id = client_data.get('client_id', 'unknown')
             client_ip = request.client_addr[0]  # GRAB THAT IP!
             
-            # TODO: Implement communication pattern to controller
-            # self.controller.register_target(client_id, client_ip)
-            print(f"🤝 Target {client_id} at {client_ip} wants to register (communication pattern TBD)")
+            # Call controller through callback
+            if self.on_target_register:
+                self.on_target_register(client_id, client_ip)
+            else:
+                print(f"🤝 Target {client_id} at {client_ip} wants to register (no callback registered)")
             
             response_data = {"status": "registered", "client_id": client_id}
             return Response(json.dumps(response_data))
 
-        @self.app.route('/target_hit', methods=['POST'])
-        async def target_hit(request):
-            """Handle when a target gets hit"""
-            hit_data = request.json
-            target_id = hit_data.get('target_id')
-            
-            # TODO: Implement communication pattern to controller
-            # if target_id and target_id in self.controller.game_state.active_targets:
-            #     self.controller.game_state.active_targets.remove(target_id)
-            #     self.controller.game_state.score += 10
-            #     print(f"💥 Target {target_id} hit! Score: {self.controller.game_state.score} - OH YEAH!")
-            print(f"💥 Target {target_id} hit! (communication pattern TBD)")
-            
-            response_data = {"status": "hit_registered", "score": 0}
-            return Response(json.dumps(response_data))
 
     async def start_server(self, host='0.0.0.0', port=80, debug=True):
         """Start the master server - this is where the magic happens, dude!"""
