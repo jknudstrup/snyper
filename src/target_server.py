@@ -11,20 +11,29 @@ from target_interface import raise_target, lower_target
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
+    print(f"🔧 Starting WiFi connection process to {ssid}")
+    
     # Reset network interfaces first to clear any cached bullshit!
+    print("🔄 Resetting network interfaces...")
     await reset_network_interface()
+    print("✅ Network interfaces reset complete")
     
     # Now do a clean connection
+    print("🔌 Creating WLAN interface...")
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
+    print(f"📡 Attempting connection to {ssid}...")
     wlan.connect(ssid, password)
+    print("🎯 Connection initiated, waiting for status...")
 
     max_wait = 30
     while max_wait > 0:
-        if wlan.status() < 0 or wlan.status() >= 3:
+        status = wlan.status()
+        print(f'🔄 Connection status: {status}, waiting... ({max_wait})')
+        if status < 0 or status >= 3:
+            print(f"🎉 Connection status changed: {status}")
             break
         max_wait -= 1
-        print(f'🔄 Waiting for connection... ({max_wait})')
         time.sleep(1)
 
     if wlan.status() != 3:
@@ -144,7 +153,7 @@ class TargetServer:
     async def start_server(self, host='0.0.0.0', port=config.port):
         """Start the target server - time to get this party started!"""
         print(f"📡 Connecting to master WiFi: {config.ssid}")
-        connect_to_wifi(config.ssid, config.password)
+        await connect_to_wifi(config.ssid, config.password)
         
         print(f"🤝 Registering with master server...")
         await self.register_with_master()

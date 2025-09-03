@@ -60,9 +60,10 @@ class MainScreen(Screen):
         # print(f"💾 RAM before server tasks: {gc.mem_free()}")
         
         # Only start server if it's not already running
-        if self.controller._server_task is None:
+        server_task = self.controller.start_server()
+        if server_task is not None:
             # print("🚀 Registering HTTP server task with GUI event loop...")
-            self.reg_task(self.controller.start_server())
+            self.reg_task(server_task)
             # print(f"💾 RAM after server task registration: {gc.mem_free()}")
             
         

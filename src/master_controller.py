@@ -14,8 +14,8 @@ class MasterController:
     
     def __init__(self):
         self.server = MasterServer(on_target_register=self.register_target)
-        self._server_task = None
         self._ap = None
+        self._server_started = False
         
         # Target tracking - unified structure
         self.targets = {}  # target_name -> {"ip": ip_address, ...}
@@ -38,7 +38,12 @@ class MasterController:
     def start_server(self):
         """Start WiFi AP and HTTP server for target registration"""
         
+        if self._server_started:
+            print("⚠️ Server already started, skipping")
+            return None
+            
         print("🌐 Starting master server through controller...")
+        self._server_started = True
         
         # Create server task but don't start it yet - that's handled by GUI
         async def server_task():
@@ -49,8 +54,8 @@ class MasterController:
                 print(f"💥 Master server error: {e}")
                 raise
         
-        self._server_task = server_task()
-        return self._server_task
+        # Return the coroutine for reg_task to handle
+        return server_task()
     
     
     def register_target(self, client_id, client_ip):
