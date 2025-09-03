@@ -7,8 +7,8 @@
 
 # CRITICAL: Import heavy server components FIRST to get clean RAM!
 print("🚀 Pre-loading server components before GUI fragments memory...")
-from master_server import MasterServer
-from events import event_bus, emit_event, subscribe_to_event, EventTypes
+# from master_server import MasterServer
+# from events import event_bus, emit_event, subscribe_to_event, EventTypes
 print("✅ Server components loaded in clean memory!")
 
 # hardware_setup must be imported before other modules because of RAM use.
@@ -20,6 +20,12 @@ from gui.core.ugui import Screen
 def run_master():
     """Main GUI entry point - starts with navigation system"""
     print("🎯 Starting SNYPER - Navigation System Active")
+    
+    # TEMPORARY: Run dual-core test instead of normal SNYPER
+    # print("⚡ RUNNING DUAL-CORE TEST MODE")
+    # from test_dual_core import test_dual_core
+    # test_dual_core()
+    # return
     
     # Create controller instance
     from master_controller import MasterController

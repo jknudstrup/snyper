@@ -6,7 +6,6 @@ import asyncio
 import time
 import urequests
 from config import config
-from helpers import reset_network_interface
 
 class SystemState:
     """Persistent system state that survives across game sessions"""
@@ -52,24 +51,6 @@ class MasterController:
         
         print("🎯 MasterController initialized - Command center operational!")
     
-    def start_ap(self):
-        """Create WiFi Access Point with clean network state"""
-        print(f"🌐 Creating WiFi AP: {self.system_state.ssid}")
-        
-        # Reset network interfaces first to clear any cached bullshit!
-        wlan, ap = reset_network_interface()
-        
-        # Now create a clean AP
-        ap.active(True)
-        ap.config(essid=self.system_state.ssid, password=self.system_state.password)
-
-        while not ap.active():
-            print("⏳ Waiting for AP to activate...")
-            time.sleep(0.1)
-
-        print(f"✅ WiFi AP '{self.system_state.ssid}' ACTIVE at {ap.ifconfig()[0]}")
-        self._ap = ap
-        return ap
     
     def start_server(self):
         """Start the HTTP server for target registration"""

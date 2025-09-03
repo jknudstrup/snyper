@@ -2,19 +2,9 @@ from microdot import Microdot, Response
 import json
 import network
 import time
+import asyncio
 from config import config
-
-def start_ap(ssid, password):
-    print(f"🌐 Creating WiFi Access Point: {ssid}")
-    ap = network.WLAN(network.AP_IF)
-    ap.active(True)
-    ap.config(essid=ssid, password=password)
-
-    while not ap.active():
-        print("⏳ Waiting for AP to activate...")
-        time.sleep(0.1)
-
-    print(f"✅ WiFi Access Point '{ssid}' is now ACTIVE at {ap.ifconfig()[0]} - targets can connect!")
+from helpers import initialize_access_point
 
 class MasterServer:
     """Master server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
@@ -22,7 +12,17 @@ class MasterServer:
     def __init__(self, controller):
         self.app = Microdot()
         self.controller = controller  # Controller reference instead of game_state
+        self._ap = None
         self._setup_routes()
+    
+    async def start_ap(self):
+        """Create WiFi Access Point with clean network state"""
+        system_state = self.controller.system_state
+        print(f"🌐 Creating WiFi AP: {system_state.ssid}")
+        
+        # Use our new helper function with reset
+        self._ap = await initialize_access_point(system_state.ssid, system_state.password, reset=True)
+        return self._ap
     
     def _setup_routes(self):
         """Set up all the routes - building our wrestling federation!"""

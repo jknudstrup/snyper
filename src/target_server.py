@@ -3,17 +3,19 @@ import json
 import network
 import time
 import urequests
+import asyncio
 from config import config
 from events import event_bus, emit_event, EventTypes
 from helpers import reset_network_interface
 from target_interface import raise_target, lower_target
 
-def connect_to_wifi(ssid, password):
+async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
     # Reset network interfaces first to clear any cached bullshit!
-    wlan, ap = reset_network_interface()
+    await reset_network_interface()
     
     # Now do a clean connection
+    wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     wlan.connect(ssid, password)
 
