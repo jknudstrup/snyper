@@ -43,13 +43,8 @@ class MasterController:
         # Create server task but don't start it yet - that's handled by GUI
         async def server_task():
             # WiFi AP should already be started by now via controller.start_ap()
-            print(f"🌐 Master HTTP server starting on {self.server.server_ip}:{self.server.port}")
             try:
-                await self.server.app.start_server(
-                    host=self.server.server_ip, 
-                    port=self.server.port, 
-                    debug=True
-                )
+                await self.server.start_server(debug=True)
             except Exception as e:
                 print(f"💥 Master server error: {e}")
                 raise
@@ -60,29 +55,29 @@ class MasterController:
     
     def register_target(self, client_id, client_ip):
         """Register a new target client"""
-        self.system_state.targets[client_id] = {"ip": client_ip}
+        self.targets[client_id] = {"ip": client_ip}
         
         print(f"🤝 Target {client_id} registered at {client_ip} via controller - LOCKED AND LOADED!")
-        print(f"🔍 Controller Debug: {len(self.system_state.targets)} targets registered")
+        print(f"🔍 Controller Debug: {len(self.targets)} targets registered")
     
     def get_targets(self):
         """Get list of registered target names"""
-        targets = list(self.system_state.targets.keys())
+        targets = list(self.targets.keys())
         print(f"📋 Controller returning {len(targets)} targets: {targets}")
         return targets
     
     async def ping_targets(self):
         """Ping all registered targets and return results"""
-        if not self.system_state.targets:
+        if not self.targets:
             print("⚠️ No targets registered to ping")
             return {}
         
         results = {}
-        print(f"🚀 Pinging {len(self.system_state.targets)} registered targets...")
+        print(f"🚀 Pinging {len(self.targets)} registered targets...")
         
-        for target_name, target_info in self.system_state.targets.items():
+        for target_name, target_info in self.targets.items():
             target_ip = target_info["ip"]
-            target_url = f"http://{target_ip}:{self.system_state.port}/ping"
+            target_url = f"http://{target_ip}:{self.server.port}/ping"
             
             try:
                 print(f"⚡ Pinging {target_name} at {target_ip}...")
@@ -113,16 +108,16 @@ class MasterController:
     
     async def raise_all(self):
         """Send stand_up command to all registered targets"""
-        if not self.system_state.targets:
+        if not self.targets:
             print("⚠️ No targets registered to raise")
             return {}
         
         results = {}
-        print(f"🚀 Sending STAND UP command to {len(self.system_state.targets)} targets...")
+        print(f"🚀 Sending STAND UP command to {len(self.targets)} targets...")
         
-        for target_name, target_info in self.system_state.targets.items():
+        for target_name, target_info in self.targets.items():
             target_ip = target_info["ip"]
-            target_url = f"http://{target_ip}:{self.system_state.port}/stand_up"
+            target_url = f"http://{target_ip}:{self.server.port}/stand_up"
             
             try:
                 print(f"⬆️ Commanding {target_name} to stand up...")
@@ -153,16 +148,16 @@ class MasterController:
     
     async def lower_all(self):
         """Send lay_down command to all registered targets"""
-        if not self.system_state.targets:
+        if not self.targets:
             print("⚠️ No targets registered to lower")
             return {}
         
         results = {}
-        print(f"🚀 Sending LAY DOWN command to {len(self.system_state.targets)} targets...")
+        print(f"🚀 Sending LAY DOWN command to {len(self.targets)} targets...")
         
-        for target_name, target_info in self.system_state.targets.items():
+        for target_name, target_info in self.targets.items():
             target_ip = target_info["ip"]
-            target_url = f"http://{target_ip}:{self.system_state.port}/lay_down"
+            target_url = f"http://{target_ip}:{self.server.port}/lay_down"
             
             try:
                 print(f"⬇️ Commanding {target_name} to lay down...")

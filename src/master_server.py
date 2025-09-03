@@ -44,13 +44,18 @@ class MasterServer:
         @self.app.route('/register', methods=['POST'])
         async def register_client(request):
             """Register a new target client - NOW WITH IP TRACKING!"""
+            print(f"📡 RECEIVED REGISTRATION REQUEST from {request.client_addr}")
+            
             client_data = request.json
             client_id = client_data.get('client_id', 'unknown')
             client_ip = request.client_addr[0]  # GRAB THAT IP!
             
+            print(f"🎯 Processing registration: {client_id} at {client_ip}")
+            
             # Call controller through callback
             if self.on_target_register:
                 self.on_target_register(client_id, client_ip)
+                print(f"✅ Registration callback completed for {client_id}")
             else:
                 print(f"🤝 Target {client_id} at {client_ip} wants to register (no callback registered)")
             
@@ -58,12 +63,14 @@ class MasterServer:
             return Response(json.dumps(response_data))
 
 
-    async def start_server(self, host='0.0.0.0', port=80, debug=True):
+    async def start_server(self, debug=True):
         """Start the master server - this is where the magic happens, dude!"""
         # WiFi AP is already set up by controller, just start HTTP server
-        print(f"🌐 Master server starting on {host}:{port} - whatcha gonna do!")
+        print(f"🌐 Master server starting on {self.server_ip}:{self.port} - whatcha gonna do!")
         try:
-            await self.app.start_server(host=host, port=port, debug=debug)
+            print(f"🚀 About to start HTTP server on {self.server_ip}:{self.port}")
+            await self.app.start_server(host=self.server_ip, port=self.port, debug=debug)
+            print(f"✅ HTTP server started successfully!")
         except KeyboardInterrupt:
             print("🛑 Master server received shutdown signal!")
             raise  # Re-raise so main() can handle it
