@@ -67,6 +67,14 @@
 - **Exception**: Reference when confused about library functionality
 - **Purpose**: Understand how external libraries work when needed
 
+### Reference Documents
+
+For quick reference, you can look in the 'docs' folder to find:
+
+- gui_library_readme.md: a copy of the original README from the 'micropython-micro-gui' library
+- microdot-readme.md: a copy of the original README for the 'microdot' library
+  If you need to refresh yourself about how to implement something in a given library, look in these files first
+
 ## Development Philosophy
 
 ### Core Principles
