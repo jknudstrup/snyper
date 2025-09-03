@@ -6,6 +6,9 @@ import asyncio
 import time
 import urequests
 from config import config
+from master_server import MasterServer
+
+
 
 class SystemState:
     """Persistent system state that survives across game sessions"""
@@ -21,32 +24,13 @@ class SystemState:
         self.targets = {}  # target_name -> {"ip": ip_address, ...}
         
 
-class GameState:
-    """Game-specific state that resets between games"""
-    
-    def __init__(self):
-        self.score = 0
-        self.active_targets = []
-        self.game_running = False
-        
-        print("🎮 GameState initialized - Ready for action!")
-    
-    def reset_game(self):
-        """Reset game state for new game"""
-        self.score = 0
-        self.active_targets.clear()
-        self.game_running = False
-        print("🔄 Game state reset - Ready for new game!")
-
 class MasterController:
     """Central controller managing all SNYPER operations"""
     
     def __init__(self):
         self.system_state = SystemState()
-        self.game_state = GameState()
         self.master_server = None
         self._server_task = None
-        self._game_loop_task = None
         self._ap = None
         
         print("🎯 MasterController initialized - Command center operational!")
@@ -54,7 +38,6 @@ class MasterController:
     
     def start_server(self):
         """Start the HTTP server for target registration"""
-        from master_server import MasterServer
         
         print("🌐 Starting master server through controller...")
         self.master_server = MasterServer(self)
@@ -228,17 +211,3 @@ class MasterController:
             print("✨ All targets responded successfully - no cleanup needed!")
         
         return results
-    
-    def start_game(self):
-        """Start a new game"""
-        self.game_state.game_running = True
-        print("🚀 Game started via controller!")
-    
-    def stop_game(self):
-        """Stop current game"""
-        self.game_state.game_running = False
-        print("🛑 Game stopped via controller!")
-    
-    def reset_game(self):
-        """Reset game state for new game"""
-        self.game_state.reset_game()

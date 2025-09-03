@@ -9,9 +9,8 @@ from helpers import initialize_access_point
 class MasterServer:
     """Master server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
     
-    def __init__(self, controller):
+    def __init__(self ):
         self.app = Microdot()
-        self.controller = controller  # Controller reference instead of game_state
         self._ap = None
         self._setup_routes()
     
@@ -58,36 +57,6 @@ class MasterServer:
                 print(f"💥 Target {target_id} hit! Score: {self.controller.game_state.score} - OH YEAH!")
             
             response_data = {"status": "hit_registered", "score": self.controller.game_state.score}
-            return Response(json.dumps(response_data))
-
-        @self.app.route('/start_game', methods=['POST'])
-        async def start_game(request):
-            """Start the game"""
-            self.controller.start_game()
-            self.controller.game_state.score = 0
-            self.controller.game_state.active_targets.clear()
-            print("🚀 GAME STARTED - Let me tell you something, brother!")
-            
-            response_data = {"status": "game_started"}
-            return Response(json.dumps(response_data))
-
-        @self.app.route('/stop_game', methods=['POST'])
-        async def stop_game(request):
-            """Stop the game"""
-            self.controller.stop_game()
-            print("🏁 Game stopped - that was AWESOME!")
-            
-            response_data = {"status": "game_stopped", "final_score": self.controller.game_state.score}
-            return Response(json.dumps(response_data))
-
-        @self.app.route('/get_targets', methods=['GET'])
-        async def get_targets(request):
-            """Get current active targets - useful for debugging, brother!"""
-            response_data = {
-                "active_targets": self.controller.game_state.active_targets,
-                "score": self.controller.game_state.score,
-                "game_running": self.controller.game_state.game_running
-            }
             return Response(json.dumps(response_data))
 
     async def start_server(self, host='0.0.0.0', port=80, debug=True):
