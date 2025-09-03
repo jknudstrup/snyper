@@ -6,15 +6,13 @@
 
 **Mission ACCOMPLISHED**: Physical Button Memory Leak Eliminated ✅
 
-**Planning Document**: `.claude/physical-button-refactor-plan.md`
-
 **Issue Status**: **RESOLVED** - Global GPIO handler architecture eliminates memory leaks while preserving physical button functionality
 
 **Latest Achievement**: Revolutionary global GPIO handler system - no more circular references, stable memory management, full button functionality
 
 **Current Mission**: **Dual-Core Parallelism Exploration** ⚡
 
-**Planning Document**: `.claude/dual-core-exploration-plan.md`
+**Planning Document**: `plans/dual-core-exploration-plan.md`
 
 **Objective**: Test and evaluate dual-core threading for SNYPER performance improvements
 
@@ -141,7 +139,7 @@
 
 ### 1. Planning Complex Changes
 
-For multi-step features, create a plan document (like `gui-restructure-plan.md`) within the .claude folder:
+For multi-step features, create a plan document (like `gui-restructure-plan.md`) within the 'plans' folder:
 
 ```markdown
 ## Phase N: [Name]
@@ -150,6 +148,8 @@ For multi-step features, create a plan document (like `gui-restructure-plan.md`)
 **Risk Level**: [Low/Medium/High]  
 **Status**: [Pending/In Progress/Complete]
 ```
+
+When a plan has been fully implemented, move the plan file to 'plans/done'
 
 ### 2. Development Flow
 
@@ -266,7 +266,6 @@ When confused about external library behavior, check `.extra/` folder:
 
 - **Use `mpremote cp -r . :` NOT `mpremote mount . cp -r . :`** - The mount command causes sync failures
 - **Always activate Python environment** before running sync.sh (contains mpremote)
-- **Device identity overlay** - `device_id.json` automatically overrides config.json node_id
 - **Full folder sync** - Simpler and more reliable than selective file copying
 
 **MEMORY ALLOCATION ORDER IS EVERYTHING:**
@@ -274,28 +273,9 @@ When confused about external library behavior, check `.extra/` folder:
 ```python
 # ✅ CORRECT - Heavy imports FIRST
 from master_server import MasterServer
-from events import event_bus
 # Then GUI imports
 import hardware_setup
 from gui.core.ugui import Screen
-```
-
-**ALWAYS RESET NETWORK INTERFACES ON INITIALIZATION:**
-
-```python
-from helpers import reset_network_interface
-# Call on device startup
-wlan, ap = reset_network_interface()
-```
-
-**MASTERCONTROLLER PATTERN:**
-
-```python
-# ✅ CORRECT - Controller manages all state and operations
-controller = MasterController()
-controller.start_ap()
-# Pass controller to all components
-Screen.change(MainScreen, args=(controller,))
 ```
 
 **GUI-FIRST ASYNC TASK REGISTRATION:**
