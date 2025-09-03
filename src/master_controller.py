@@ -9,46 +9,36 @@ from config import config
 from master_server import MasterServer
 
 
-
-class SystemState:
-    """Persistent system state that survives across game sessions"""
-    
-    def __init__(self):
-        # Load all config values into system state
-        self.ssid = config.ssid
-        self.password = config.password  
-        self.server_ip = config.server_ip
-        self.port = config.port
-        
-        # Target tracking - unified structure
-        self.targets = {}  # target_name -> {"ip": ip_address, ...}
-        
-
 class MasterController:
     """Central controller managing all SNYPER operations"""
     
     def __init__(self):
-        self.system_state = SystemState()
-        self.master_server = None
+        self.server = MasterServer()
         self._server_task = None
         self._ap = None
+        
+        # Target tracking - unified structure
+        self.targets = {}  # target_name -> {"ip": ip_address, ...}
         
         print("🎯 MasterController initialized - Command center operational!")
     
     
     def start_server(self):
-        """Start the HTTP server for target registration"""
+        """Start WiFi AP and HTTP server for target registration"""
         
         print("🌐 Starting master server through controller...")
-        self.master_server = MasterServer(self)
         
         # Create server task but don't start it yet - that's handled by GUI
         async def server_task():
-            print(f"🌐 Master HTTP server starting on {self.system_state.server_ip}:{self.system_state.port}")
+            # Start WiFi AP first
+            await self.server.start_ap()
+            
+            # Then start HTTP server
+            print(f"🌐 Master HTTP server starting on {self.server.server_ip}:{self.server.port}")
             try:
-                await self.master_server.app.start_server(
-                    host=self.system_state.server_ip, 
-                    port=self.system_state.port, 
+                await self.server.app.start_server(
+                    host=self.server.server_ip, 
+                    port=self.server.port, 
                     debug=True
                 )
             except Exception as e:
@@ -202,11 +192,11 @@ class MasterController:
         if failed_targets:
             print(f"🧹 Cleaning up {len(failed_targets)} failed targets...")
             for target_name in failed_targets:
-                target_ip = self.system_state.targets[target_name]["ip"]
-                del self.system_state.targets[target_name]
+                target_ip = self.targets[target_name]["ip"]
+                del self.targets[target_name]
                 print(f"🗑️ Removed {target_name} ({target_ip}) from registered targets")
             
-            print(f"📊 Cleanup complete: {len(self.system_state.targets)} targets remaining")
+            print(f"📊 Cleanup complete: {len(self.targets)} targets remaining")
         else:
             print("✨ All targets responded successfully - no cleanup needed!")
         

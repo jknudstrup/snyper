@@ -10,9 +10,9 @@
 
 **Latest Achievement**: Revolutionary global GPIO handler system - no more circular references, stable memory management, full button functionality
 
-**Current Mission**: **Dual-Core Parallelism Exploration** ⚡
+**Current Mission**: **Refactor controller/server operations** ⚡
 
-**Planning Document**: `plans/dual-core-exploration-plan.md`
+**Planning Document**: `plans/controller-server-refactor-plan.md`
 
 **Objective**: Test and evaluate dual-core threading for SNYPER performance improvements
 
