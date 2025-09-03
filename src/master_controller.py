@@ -23,6 +23,18 @@ class MasterController:
         print("🎯 MasterController initialized - Command center operational!")
     
     
+    def start_ap(self):
+        """Start WiFi Access Point via server (synchronous wrapper)"""
+        try:
+            # Try to get existing event loop
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            # Create new event loop if none exists
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        return loop.run_until_complete(self.server.start_ap())
+    
     def start_server(self):
         """Start WiFi AP and HTTP server for target registration"""
         
@@ -30,10 +42,7 @@ class MasterController:
         
         # Create server task but don't start it yet - that's handled by GUI
         async def server_task():
-            # Start WiFi AP first
-            await self.server.start_ap()
-            
-            # Then start HTTP server
+            # WiFi AP should already be started by now via controller.start_ap()
             print(f"🌐 Master HTTP server starting on {self.server.server_ip}:{self.server.port}")
             try:
                 await self.server.app.start_server(

@@ -38,7 +38,7 @@ async def reset_network_interface():
         
     print("🔄 Network interfaces reset - ready for clean connection!")
 
-async def initialize_access_point(ssid, password, reset=True):
+async def initialize_access_point(ssid, password, reset=False):
     """Initialize WiFi Access Point with optional network reset
     
     Args:

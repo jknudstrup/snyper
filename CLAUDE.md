@@ -107,6 +107,8 @@ For quick reference, you can look in the 'docs' folder to find:
 ./killmp.sh     # Kill stuck mpremote processes
 ```
 
+**Testing Protocol**: During iterative development, Claude should pause for manual testing rather than automatically running dev scripts, unless explicitly instructed otherwise.
+
 ### Commit Permissions
 
 **CLEARANCE GRANTED**: Claude is authorized to commit changes at will during development sessions. Use good judgment for commit timing (completed features, bug fixes, working states). Continue using descriptive commit messages that capture the badassery being achieved.

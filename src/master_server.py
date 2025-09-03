@@ -29,7 +29,7 @@ class MasterServer:
         print(f"🌐 Creating WiFi AP: {self.ssid}")
         
         # Use our new helper function with reset
-        self._ap = await initialize_access_point(self.ssid, self.password, reset=True)
+        self._ap = await initialize_access_point(self.ssid, self.password, reset=False)
         return self._ap
     
     def _setup_routes(self):

@@ -33,6 +33,7 @@ if [ "$ON_DEVICE" = true ]; then
     echo "📱 On-device execution mode"
 else
     echo "💾 Mount execution mode"
+    mpremote reset
 fi
 
 case "$DEVICE_TYPE" in
