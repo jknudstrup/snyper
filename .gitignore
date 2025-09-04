@@ -3,5 +3,5 @@ snyper_env
 .prompts
 .extra
 config.conf
-src/device_id.json
+src/config/device_id.json
 *.uf2
