@@ -57,7 +57,7 @@ class Config:
         """Save current config to file"""
         try:
             with open(self.config_file, "w") as f:
-                json.dump(self.config, f, indent=4)
+                json.dump(self.config, f)
             print(f"💾 Config saved to {self.config_file}")
         except OSError as e:
             print(f"💥 Failed to save config: {e}")

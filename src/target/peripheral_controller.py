@@ -80,6 +80,7 @@ class PeripheralController:
         Returns:
             bool: True when movement is assumed complete (after 0.5s delay)
         """
+        print("Peripheral Controller received 'Lower' command")
         self._servo_write(0)
         await asyncio.sleep(0.5)
         return True

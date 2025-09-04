@@ -1,11 +1,1 @@
-{
-  "ssid": "PICO_AP_2",
-  "password": "micropython123",
-  "server_ip": "192.168.4.1",
-  "port": 80,
-  "targets": {
-    "target_1": {
-      "hit_value": 1
-    }
-  }
-}
+{"password": "micropython123", "server_ip": "192.168.4.1", "port": 80, "node_id": "master", "ssid": "PICO_AP_DEFAULT"}

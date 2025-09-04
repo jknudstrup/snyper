@@ -12,7 +12,7 @@ async def connect_to_wifi(ssid, password):
     print(f"🔧 Starting WiFi connection process to {ssid}")
     
     # Reset network interfaces first to clear any cached bullshit!
-    print("🔄 Resetting network interfaces...")
+    # print("🔄 Resetting network interfaces...")
     await reset_network_interface()
     print("✅ Network interfaces reset complete")
     
