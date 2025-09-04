@@ -1,11 +1,5 @@
-from gui.core.ugui import Screen, ssd, Widget, display
-from gui.widgets import Label, Button, CloseButton
-from gui.core.writer import CWriter
-from gui.primitives.pushbutton import Pushbutton
-import gui.fonts.font14 as font
-import gui.fonts.icons as icons
+from gui.core.ugui import Screen, Widget, display
 from gui.core.colors import *
-from machine import Pin
 import uasyncio as asyncio
 
 
@@ -106,10 +100,6 @@ class PhysicalButton(PassiveButton):
         defaults.update(kwargs)
         
         super().__init__(wri, **defaults)
-        
-        # Initialize global GPIO handlers once
-        from display.gpio_handlers import _init_global_buttons
-        _init_global_buttons()
     
     def _default_callback(self, button):
         """Default behavior if no callback provided"""
