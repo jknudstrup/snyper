@@ -125,15 +125,16 @@ class DebugScreen(Screen):
                 print("💥 No targets to raise!")
                 return
             
-            # Count standing targets
-            standing_count = sum(1 for result in results.values() if result["status"] == "standing")
+            # Count successful responses (standing or command_queued)
+            success_count = sum(1 for result in results.values() 
+                              if result["status"] in ["standing", "command_queued"])
             total_targets = len(results)
             
             # Log results
-            if standing_count == total_targets:
-                print(f"🎆 ALL {standing_count} targets STANDING")
-            elif standing_count > 0:
-                print(f"⚠️ {standing_count}/{total_targets} targets responded and are standing")
+            if success_count == total_targets:
+                print(f"🎆 ALL {success_count} targets received RAISE command")
+            elif success_count > 0:
+                print(f"⚠️ {success_count}/{total_targets} targets responded to raise command")
             else:
                 print("💥 No targets responded to raise command!")
             
@@ -162,15 +163,16 @@ class DebugScreen(Screen):
                 print("💥 No targets to lower!")
                 return
             
-            # Count down targets
-            down_count = sum(1 for result in results.values() if result["status"] == "down")
+            # Count successful responses (down or command_queued)
+            success_count = sum(1 for result in results.values() 
+                              if result["status"] in ["down", "command_queued"])
             total_targets = len(results)
             
             # Log results
-            if down_count == total_targets:
-                print(f"🎆 ALL {down_count} targets DOWN")
-            elif down_count > 0:
-                print(f"⚠️ {down_count}/{total_targets} targets responded and are down")
+            if success_count == total_targets:
+                print(f"🎆 ALL {success_count} targets received LOWER command")
+            elif success_count > 0:
+                print(f"⚠️ {success_count}/{total_targets} targets responded to lower command")
             else:
                 print("💥 No targets responded to lower command!")
             

@@ -122,9 +122,13 @@ class MasterController:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    if data.get("status") == "standing":
+                    status = data.get("status")
+                    if status == "standing":
                         print(f"✅ {target_name} is now STANDING - ready for action!")
                         results[target_name] = {"status": "standing", "ip": target_ip}
+                    elif status == "command_queued":
+                        print(f"✅ {target_name} received STAND UP command - processing...")
+                        results[target_name] = {"status": "command_queued", "ip": target_ip}
                     else:
                         print(f"⚠️ {target_name} responded but status unexpected: {data}")
                         results[target_name] = {"status": "unknown", "ip": target_ip}
@@ -162,9 +166,13 @@ class MasterController:
                 
                 if response.status_code == 200:
                     data = response.json()
-                    if data.get("status") == "down":
+                    status = data.get("status")
+                    if status == "down":
                         print(f"✅ {target_name} is now DOWN - taking cover!")
                         results[target_name] = {"status": "down", "ip": target_ip}
+                    elif status == "command_queued":
+                        print(f"✅ {target_name} received LAY DOWN command - processing...")
+                        results[target_name] = {"status": "command_queued", "ip": target_ip}
                     else:
                         print(f"⚠️ {target_name} responded but status unexpected: {data}")
                         results[target_name] = {"status": "unknown", "ip": target_ip}
