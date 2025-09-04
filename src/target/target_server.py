@@ -3,11 +3,11 @@ import json
 import network
 import time
 import urequests
-import asyncio
+# import asyncio
 from config.config import config
-from events import event_bus, emit_event, EventTypes
+# from events import event_bus, emit_event, EventTypes
 from helpers import reset_network_interface
-from target.peripheral_controller import peripheral_controller
+# from target.peripheral_controller import peripheral_controller
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -127,7 +127,7 @@ class TargetServer:
         except Exception as e:
             print(f"💥 Registration error: {e}")
 
-    async def report_hit(self, hit_value):
+    async def report_result(self, hit_value):
         """Report a target hit to the master server"""
         try:
             hit_data = {

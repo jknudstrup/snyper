@@ -83,7 +83,12 @@ class PeripheralController:
         self._servo_write(0)
         await asyncio.sleep(0.5)
         return True
-
+    
+    def hit_was_detected(self):
+        pot_value = self.piezo_in.read_u16()
+        if pot_value > self.hit_threshold:
+            return True
+        return False
 
 # Create default instance for easy importing
 peripheral_controller = PeripheralController(SERVO_PIN, PIEZO_PIN, SERVO_FREQ, HIT_THRESHOLD)
