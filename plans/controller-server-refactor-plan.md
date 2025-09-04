@@ -147,6 +147,83 @@ async def start_server(self):
 3. **System**: Test full target registration and game flow
 4. **Hardware**: Deploy to device and verify WiFi AP + HTTP functionality
 
+## Phase 5: Display Code Organization
+**Goal**: Organize display-specific code into dedicated folder structure
+**Risk Level**: Medium (may require GUI code re-freezing)
+**Status**: Pending
+
+### Tasks:
+1. **Create display/ folder structure**:
+   - `display/` - Main display module folder
+   - `display/setup.py` - Initialize display globals (replaces hardware_setup + display.py globals)
+   - `display/side_buttons.py` - Button class variants (renamed from display.py)
+
+2. **Refactor hardware_setup.py**:
+   - Move display initialization to `display/setup.py`
+   - Preserve library's singleton pattern requirements
+   - Update import paths for GUI compatibility
+
+3. **Update display.py**:
+   - Extract global variable declarations to `display/setup.py`
+   - Rename file to reflect purpose: `display/side_buttons.py`
+   - Update import references throughout codebase
+
+4. **Re-freeze GUI code** (if needed):
+   - Test if display/ folder changes affect frozen GUI library
+   - Re-run freezing process if import paths break
+
+## Phase 6: Master Code Organization  
+**Goal**: Move master-specific code into dedicated folder
+**Risk Level**: Medium
+**Status**: Pending
+
+### Tasks:
+1. **Create master/ folder structure**:
+   - `master/` - Master module folder
+   - Move `master_controller.py` → `master/controller.py`
+   - Move `master_server.py` → `master/server.py`
+   - Update all import references
+
+2. **Update master.py entry point**:
+   - Update imports to new master/ structure
+   - Ensure entry point still works correctly
+
+## Phase 7: Target Code Organization
+**Goal**: Move target-specific code into dedicated folder  
+**Risk Level**: Medium
+**Status**: Pending
+
+### Tasks:
+1. **Create target/ folder structure**:
+   - `target/` - Target module folder
+   - Move `target_server.py` → `target/server.py`
+   - Update all import references
+
+2. **Update target.py entry point**:
+   - Update imports to new target/ structure
+   - Ensure entry point still works correctly
+
+## Phase 8: Event Bus Phase-Out
+**Goal**: Remove event bus dependency and replace functionality
+**Risk Level**: High (affects multiple components)
+**Status**: Pending
+
+### Tasks:
+1. **Audit events.py usage**:
+   - Find all imports from events.py
+   - Document current event-driven functionality
+   - Identify replacement patterns
+
+2. **Replace event functionality**:
+   - Convert event emissions to direct method calls
+   - Replace event listeners with callback patterns
+   - Update communication between components
+
+3. **Remove events.py**:
+   - Delete events.py file
+   - Clean up any remaining import references
+   - Test all functionality still works
+
 ## Success Criteria
 
 - ✅ No circular dependencies between controller and server
@@ -155,6 +232,9 @@ async def start_server(self):
 - ✅ All existing functionality preserved (registration, game state, WiFi AP)
 - ✅ Clean, maintainable code with single responsibility principle
 - ✅ Memory allocation patterns preserved
+- ✅ Organized folder structure: display/, master/, target/
+- ✅ Display globals properly initialized through display/setup.py
+- ✅ Event bus completely removed with functionality preserved
 
 ## Rollback Plan
 

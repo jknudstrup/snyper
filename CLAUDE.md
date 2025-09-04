@@ -1,5 +1,9 @@
 # SNYPER Development Guide
 
+**Current Mission**: **Refactor controller/server operations** ⚡
+
+**Planning Document**: `plans/controller-server-refactor-plan.md`
+
 # CAPTAIN'S LOG
 
 ## CURRENT STATUS
@@ -9,10 +13,6 @@
 **Issue Status**: **RESOLVED** - Global GPIO handler architecture eliminates memory leaks while preserving physical button functionality
 
 **Latest Achievement**: Revolutionary global GPIO handler system - no more circular references, stable memory management, full button functionality
-
-**Current Mission**: **Refactor controller/server operations** ⚡
-
-**Planning Document**: `plans/controller-server-refactor-plan.md`
 
 **Objective**: Test and evaluate dual-core threading for SNYPER performance improvements
 
@@ -54,6 +54,9 @@
 - `helpers.py` - 🔧 Shared utilities (network reset bullshit eliminator)
 
 ### Codebase Navigation Rules
+
+- Project files are found within `src`
+- Frozen code (baked into .uf2 firmware) is found in `src_frozen`
 
 **IGNORE these folders during normal codebase analysis:**
 
@@ -160,6 +163,7 @@ For multi-step features, create a plan document (like `gui-restructure-plan.md`)
 **Status**: [Pending/In Progress/Complete]
 ```
 
+When a step or phase of a plan has been implemented, edit the plan file to mark it as DONE.
 When a plan has been fully implemented, move the plan file to 'plans/done'
 
 ### 2. Development Flow
@@ -296,3 +300,4 @@ from gui.core.ugui import Screen
 self.reg_task(self.controller.start_server())
 self.reg_task(self.controller.start_game_loop())
 ```
+- Don't attempt to test project code by running 'python'. This is a Micropython project and, as such, the results of running normal Python will be misleadingly different.
