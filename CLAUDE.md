@@ -160,7 +160,10 @@ For multi-step features, create a plan document (like `gui-restructure-plan.md`)
 **Status**: [Pending/In Progress/Complete]
 ```
 
+When you've decided on a step/phase to work on, mark it in the planning document, near the very top, in the line immediately after the title, as "CURRENT PHASE: (N)"
+
 When a step or phase of a plan has been implemented, edit the plan file to mark it as DONE.
+
 When a plan has been fully implemented, move the plan file to 'plans/done'
 
 ### 2. Development Flow

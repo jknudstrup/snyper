@@ -66,7 +66,7 @@ echo "🎯 Running $DEVICE_TYPE on $SERIAL_DEVICE"
 
 # Step 1: Generate device identity file
 echo "⚙️ Setting device identity to: $DEVICE_TYPE"
-cat > src/device_id.json << EOF
+cat > src/config/device_id.json << EOF
 {
     "node_id": "$DEVICE_TYPE"
 }

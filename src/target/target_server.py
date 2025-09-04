@@ -4,7 +4,7 @@ import network
 import time
 import urequests
 import asyncio
-from config import config
+from config.config import config
 from events import event_bus, emit_event, EventTypes
 from helpers import reset_network_interface
 from target.target_interface import raise_target, lower_target

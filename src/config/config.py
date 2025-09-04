@@ -3,7 +3,7 @@ import json
 class Config:
     """Configuration manager with type hints and error handling - BROTHER!"""
     
-    def __init__(self, config_file="config.json"):
+    def __init__(self, config_file="config/config.json"):
         self.config_file = config_file
         self.config = {}
         self.load_config()
@@ -18,7 +18,7 @@ class Config:
                 
             # Try to load device_id.json overlay (gitignored)
             try:
-                with open("device_id.json") as f:
+                with open("config/device_id.json") as f:
                     device_config = json.load(f)
                     self.config.update(device_config)
                     print(f"✅ Loaded device identity: {device_config.get('node_id')}")

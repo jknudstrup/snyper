@@ -3,7 +3,7 @@ import json
 import network
 import time
 import asyncio
-from config import config
+from config.config import config
 from helpers import initialize_access_point
 
 class MasterServer:

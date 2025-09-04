@@ -1,4 +1,5 @@
 # MasterController/MasterServer Architecture Refactor Plan
+CURRENT PHASE: 9
 
 ## Problem Analysis
 
@@ -203,7 +204,36 @@ async def start_server(self):
    - Update imports to new target/ structure
    - Ensure entry point still works correctly
 
-## Phase 8: Event Bus Phase-Out
+## Phase 8: Config Code Organization
+**Goal**: Move config-specific code into dedicated config/ folder
+**Risk Level**: Medium
+**Status**: Complete ✅
+
+### Tasks:
+1. **Create config/ folder structure**: ✅
+   - `config/` - Config module folder
+   - Move `config.py` → `config/config.py`
+   - Move `config.json` → `config/config.json`
+   - Move `device_id.json` → `config/device_id.json`
+   - Update all import references throughout codebase
+
+2. **Update script references**: ✅
+   - Update dev.sh to create device_id.json in correct location
+   - Update sync.sh to create device_id.json in correct location
+   - Test configuration loading still works
+
+## Phase 9: Sync Script Updates
+**Goal**: Update sync.sh to reflect new folder organization
+**Risk Level**: Low
+**Status**: Pending
+
+### Tasks:
+1. **Update sync.sh paths**:
+   - Update file paths to reflect master/, target/, config/ folders
+   - Ensure proper deployment of reorganized code structure
+   - Test deployment to actual devices
+
+## Phase 10: Event Bus Phase-Out
 **Goal**: Remove event bus dependency and replace functionality
 **Risk Level**: High (affects multiple components)
 **Status**: Pending

@@ -5,7 +5,7 @@
 import asyncio
 import time
 import urequests
-from config import config
+from config.config import config
 from master.master_server import MasterServer
 
 
