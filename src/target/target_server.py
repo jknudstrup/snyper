@@ -3,11 +3,9 @@ import json
 import network
 import time
 import urequests
-# import asyncio
 from config.config import config
-# from events import event_bus, emit_event, EventTypes
 from helpers import reset_network_interface
-# from target.peripheral_controller import peripheral_controller
+from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -68,23 +66,23 @@ class TargetServer:
         @self.app.route('/stand_up')
         async def stand_up(request):
             """Command target to stand up"""
-            print(f"🎯 Target {self.node_id} standing up - ready for action!")
+            print(f"🎯 Target {self.node_id} received stand_up command")
             
-            # Execute hardware raise command
-            await peripheral_controller.raise_target()
+            # Emit event to controller
+            await target_event_queue.put(TargetEvent(HTTP_COMMAND_UP))
             
-            response_data = {"status": "standing", "target_id": self.node_id}
+            response_data = {"status": "command_queued", "target_id": self.node_id}
             return Response(json.dumps(response_data))
 
         @self.app.route('/lay_down')
         async def lay_down(request):
             """Command target to lay down"""
-            print(f"🎯 Target {self.node_id} laying down - taking cover!")
+            print(f"🎯 Target {self.node_id} received lay_down command")
             
-            # Execute hardware lower command
-            await peripheral_controller.lower_target()
+            # Emit event to controller
+            await target_event_queue.put(TargetEvent(HTTP_COMMAND_DOWN))
             
-            response_data = {"status": "down", "target_id": self.node_id}
+            response_data = {"status": "command_queued", "target_id": self.node_id}
             return Response(json.dumps(response_data))
 
         @self.app.route('/activate', methods=['POST'])
@@ -94,10 +92,13 @@ class TargetServer:
                 data = request.json
                 duration = data.get('duration', 5)  # Default 5 seconds
                 
-                print(f"🎯 Target {self.node_id} activated for {duration} seconds - let's rock!")
+                print(f"🎯 Target {self.node_id} received activate command for {duration} seconds")
+                
+                # Emit event to controller
+                await target_event_queue.put(TargetEvent(HTTP_COMMAND_ACTIVATE, {'duration': duration}))
                 
                 response_data = {
-                    "status": "activated", 
+                    "status": "activation_queued", 
                     "target_id": self.node_id,
                     "duration": duration
                 }

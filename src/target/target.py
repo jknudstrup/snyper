@@ -14,7 +14,11 @@ async def run_target():
     print(f"🎯 Target {target_controller.id} system initialized")
     
     try:
-        await target_server.start_server()
+        # Start both the server loop and controller event processing loop concurrently
+        await asyncio.gather(
+            target_server.start_server(),          # HTTP server loop
+            target_controller.process_events(),    # Event processing loop
+        )
     except KeyboardInterrupt:
         print("🛑 Target system shutdown requested")
     except Exception as e:
