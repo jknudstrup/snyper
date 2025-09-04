@@ -1,6 +1,6 @@
 import asyncio
 from config.config import config
-from events import subscribe_to_event, emit_event, EventTypes
+# Event system removed - using direct method calls
 from target.target_server import TargetServer
 import time
 

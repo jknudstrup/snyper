@@ -160,7 +160,23 @@ For multi-step features, create a plan document (like `gui-restructure-plan.md`)
 **Status**: [Pending/In Progress/Complete]
 ```
 
-When you've decided on a step/phase to work on, mark it in the planning document, near the very top, in the line immediately after the title, as "CURRENT PHASE: (N)"
+**PLANNING DOCUMENT STRUCTURE**: When creating a plan document, include:
+1. **CURRENT PHASE: (N)** indicator immediately after the title
+2. **Phase List** (table of contents) showing all phases - create this ONCE when the plan is first written
+3. Only update the Phase List when phases are added, changed, or deleted - NOT for status updates
+
+```markdown
+# Plan Title
+CURRENT PHASE: 3
+
+## Phase List
+- Phase 1: Server Creation Refactor
+- Phase 2: Communication Architecture Design  
+- Phase 3: WiFi Access Point Integration
+- Phase 4: Method Cleanup and Testing
+```
+
+When you've decided on a step/phase to work on, mark it in the planning document as "CURRENT PHASE: (N)"
 
 When a step or phase of a plan has been implemented, edit the plan file to mark it as DONE.
 

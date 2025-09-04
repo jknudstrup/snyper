@@ -69,9 +69,22 @@ Deploy code to device storage for standalone operation:
 ./sync.sh target_1
 ./sync.sh target_2
 
+# Clean deployment (wipe device completely before deploying)
+./sync.sh master -clean
+./sync.sh target_1 -clean
+
 # Disable device (prevent auto-start. Note: not super functional at the moment)
 ./sync.sh disable
 ```
+
+**Clean Flag (`-clean`):**
+
+The `-clean` flag completely wipes the device before deployment, removing all existing files:
+
+- **Use Case**: Clean slate deployment when troubleshooting file conflicts
+- **Safety**: Removes ALL files on device, use with caution
+- **Process**: Runs `mpremote rm -r :` before copying new files
+- **Syntax**: Can be used with any device type: `./sync.sh <device_type> -clean`
 
 ## Device Identity System
 

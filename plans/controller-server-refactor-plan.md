@@ -1,5 +1,18 @@
 # MasterController/MasterServer Architecture Refactor Plan
-CURRENT PHASE: 9
+CURRENT PHASE: 11
+
+## Phase List
+- Phase 1: Server Creation Refactor
+- Phase 2: Communication Architecture Design
+- Phase 3: WiFi Access Point Integration  
+- Phase 4: Method Cleanup and Testing
+- Phase 5: Display Code Organization
+- Phase 6: Master Code Organization
+- Phase 7: Target Code Organization
+- Phase 8: Config Code Organization
+- Phase 9: Sync Script Updates
+- Phase 10: Sync Script Clean Flag
+- Phase 11: Event Bus Phase-Out
 
 ## Problem Analysis
 
@@ -225,15 +238,31 @@ async def start_server(self):
 ## Phase 9: Sync Script Updates
 **Goal**: Update sync.sh to reflect new folder organization
 **Risk Level**: Low
-**Status**: Pending
+**Status**: Complete ✅
 
 ### Tasks:
-1. **Update sync.sh paths**:
-   - Update file paths to reflect master/, target/, config/ folders
-   - Ensure proper deployment of reorganized code structure
-   - Test deployment to actual devices
+1. **Review sync.sh paths**: ✅
+   - Verified sync.sh uses recursive copy (`cp -r . :`) which automatically handles new folder structure
+   - Device identity creation path already updated to `src/config/device_id.json`
+   - No additional path updates needed - script already properly structured
 
-## Phase 10: Event Bus Phase-Out
+## Phase 10: Sync Script Clean Flag
+**Goal**: Add -clean flag to sync.sh for complete device wipe before deployment
+**Risk Level**: Low
+**Status**: Complete ✅
+
+### Tasks:
+1. **Add -clean flag support to sync.sh**: ✅
+   - Parse command line arguments to detect -clean flag
+   - Run `mpremote rm -r :` before copying files when flag is present
+   - Update usage documentation in script
+
+2. **Update project documentation**: ✅
+   - Add clean flag documentation to README.md
+   - Document use cases and safety considerations
+   - Update development workflow documentation
+
+## Phase 11: Event Bus Phase-Out
 **Goal**: Remove event bus dependency and replace functionality
 **Risk Level**: High (affects multiple components)
 **Status**: Pending

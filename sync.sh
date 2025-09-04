@@ -16,9 +16,22 @@ else
     SERIAL_TARGET="/dev/cu.usbmodem*"
 fi
 
-# Parse command line - DEFAULT TO MASTER IF NO ARGS
+# Parse command line arguments
 DEVICE_TYPE="${1:-master}"  # 🎯 DEFAULT = master when no arguments
+CLEAN_MODE=false
+
+# Check for -clean flag in any position
+for arg in "$@"; do
+    if [ "$arg" = "-clean" ]; then
+        CLEAN_MODE=true
+        break
+    fi
+done
+
 echo "🎯 Deploying device type: $DEVICE_TYPE"
+if [ "$CLEAN_MODE" = true ]; then
+    echo "🧹 Clean mode enabled - device will be wiped before deployment"
+fi
 
 case "$DEVICE_TYPE" in
     master|"")
@@ -34,9 +47,10 @@ case "$DEVICE_TYPE" in
         echo "🚫 Disable mode selected - device will not auto-start"
         ;;
     *)
-        echo "Usage: $0 [master|target_1|target_2|...|disable]"
+        echo "Usage: $0 [master|target_1|target_2|...|disable] [-clean]"
         echo "Default: master (when no arguments provided)"
         echo "  disable: Set device to disabled state (no auto-start)"
+        echo "  -clean: Wipe device completely before deployment (removes all files)"
         exit 1
         ;;
 esac
@@ -51,7 +65,14 @@ cat > src/config/device_id.json << EOF
 }
 EOF
 
-# Step 2: Deploy entire src folder to device
+# Step 2: Clean device if requested
+if [ "$CLEAN_MODE" = true ]; then
+    echo "🧹 Wiping device completely..."
+    mpremote connect "$SERIAL_DEVICE" rm -r :
+    echo "✅ Device wiped clean"
+fi
+
+# Step 3: Deploy entire src folder to device
 echo "🚀 Deploying src folder to device..."
 cd src
 mpremote connect "$SERIAL_DEVICE" cp -r . :
