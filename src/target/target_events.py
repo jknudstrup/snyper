@@ -1,4 +1,4 @@
-import asyncio
+import uasyncio
 
 class TargetEvent:
     """Event object for target system communication"""
@@ -13,7 +13,7 @@ class SimpleQueue:
     """Simple async queue implementation for MicroPython"""
     def __init__(self):
         self._queue = []
-        self._event = asyncio.Event()
+        self._event = uasyncio.Event()
     
     async def put(self, item):
         """Put an item into the queue"""

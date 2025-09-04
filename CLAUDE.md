@@ -209,6 +209,8 @@ When a plan has been fully implemented, move the plan file to 'plans/done'
 - **Async integration** - Use `self.reg_task()` for GUI-managed async tasks
 - **Error handling** - Print detailed errors for embedded debugging
 - **Network interfaces** - Always reset using `helpers.reset_network_interface()`
+- **Async imports** - **ALWAYS use `import uasyncio`** for MicroPython compatibility, never `import asyncio`
+- **Sleep calls** - Use `uasyncio.sleep_ms(milliseconds)` not `uasyncio.sleep(seconds)` for MicroPython
 
 ### Code Quality
 

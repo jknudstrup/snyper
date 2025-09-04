@@ -2,10 +2,8 @@
 # 
 # Single controller for managing all SNYPER system state and operations
 
-import asyncio
-import time
+import uasyncio
 import urequests
-from config.config import config
 from master.master_server import MasterServer
 
 
@@ -25,14 +23,8 @@ class MasterController:
     
     def start_ap(self):
         """Start WiFi Access Point via server (synchronous wrapper)"""
-        try:
-            # Try to get existing event loop
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            # Create new event loop if none exists
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        
+        # MicroPython has single event loop, just get it
+        loop = uasyncio.get_event_loop()
         return loop.run_until_complete(self.server.start_ap())
     
     def start_server(self):
@@ -107,7 +99,7 @@ class MasterController:
                 results[target_name] = {"status": "failed", "ip": target_ip}
             
             # Allow GUI to stay responsive between pings
-            await asyncio.sleep(0.1)
+            await uasyncio.sleep_ms(100)
         
         return results
     
@@ -147,7 +139,7 @@ class MasterController:
                 results[target_name] = {"status": "failed", "ip": target_ip}
             
             # Allow GUI to stay responsive between commands
-            await asyncio.sleep(0.1)
+            await uasyncio.sleep_ms(100)
         
         return results
     
@@ -187,7 +179,7 @@ class MasterController:
                 results[target_name] = {"status": "failed", "ip": target_ip}
             
             # Allow GUI to stay responsive between commands
-            await asyncio.sleep(0.1)
+            await uasyncio.sleep_ms(100)
         
         return results
     

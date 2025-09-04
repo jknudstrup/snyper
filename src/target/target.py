@@ -1,4 +1,4 @@
-import asyncio
+import uasyncio
 from target.target_server import TargetServer
 from target.target_controller import TargetController
 from target.peripheral_controller import peripheral_controller
@@ -15,7 +15,7 @@ async def run_target():
     
     try:
         # Start both the server loop and controller event processing loop concurrently
-        await asyncio.gather(
+        await uasyncio.gather(
             target_server.start_server(),          # HTTP server loop
             target_controller.process_events(),    # Event processing loop
         )
@@ -26,4 +26,4 @@ async def run_target():
         raise
     
 if __name__ == "__main__":
-    asyncio.run(run_target())
+    uasyncio.run(run_target())

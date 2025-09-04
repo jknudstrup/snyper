@@ -1,4 +1,4 @@
-import asyncio
+import uasyncio
 from config.config import config
 import time
 from target.target_events import target_event_queue, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
@@ -58,7 +58,7 @@ class TargetController:
                 self.hit_detected = True
                 print(f"💥 HIT DETECTED on target {self.id}!")
                 break
-            await asyncio.sleep(0.01)  # 100Hz polling
+            await uasyncio.sleep_ms(10)  # 100Hz polling
         
         # Lower target and report result
         await self.peripheral_controller.lower_target()

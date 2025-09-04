@@ -1,5 +1,5 @@
 from machine import Pin, PWM, ADC
-import asyncio
+import uasyncio
 
 # Pin Assignments
 SERVO_PIN = 16
@@ -70,7 +70,7 @@ class PeripheralController:
             bool: True when movement is assumed complete (after 0.5s delay)
         """
         self._servo_write(90)
-        await asyncio.sleep(0.5)
+        await uasyncio.sleep_ms(500)
         return True
     
     async def lower_target(self):
@@ -81,7 +81,7 @@ class PeripheralController:
             bool: True when movement is assumed complete (after 0.5s delay)
         """
         self._servo_write(0)
-        await asyncio.sleep(0.5)
+        await uasyncio.sleep_ms(500)
         return True
     
     def hit_was_detected(self):

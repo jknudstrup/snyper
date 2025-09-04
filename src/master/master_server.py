@@ -1,8 +1,5 @@
 from microdot import Microdot, Response
 import json
-import network
-import time
-import asyncio
 from config.config import config
 from helpers import initialize_access_point
 
