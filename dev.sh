@@ -79,7 +79,7 @@ if [ "$ON_DEVICE" = true ]; then
     
     # Determine which file to execute based on device type
     if [[ "$DEVICE_TYPE" == target_* ]]; then
-        EXEC_FILE="target.py"
+        EXEC_FILE="target/target.py"
     else
         EXEC_FILE="master/master.py"
     fi
@@ -92,7 +92,7 @@ else
     
     # Determine which file to run based on device type
     if [[ "$DEVICE_TYPE" == target_* ]]; then
-        RUN_FILE="target.py"
+        RUN_FILE="target/target.py"
     else
         RUN_FILE="master/master.py"
     fi

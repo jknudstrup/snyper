@@ -7,7 +7,7 @@ import asyncio
 from config import config
 from events import event_bus, emit_event, EventTypes
 from helpers import reset_network_interface
-from target_interface import raise_target, lower_target
+from target.target_interface import raise_target, lower_target
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""

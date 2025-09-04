@@ -1,7 +1,7 @@
 import asyncio
 from config import config
 from events import subscribe_to_event, emit_event, EventTypes
-from target_server import TargetServer
+from target.target_server import TargetServer
 import time
 
 class TargetController:

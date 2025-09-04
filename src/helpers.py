@@ -2,7 +2,7 @@
 
 import network
 import asyncio
-import time
+import time 
 
 async def reset_network_interface():
     """Properly reset the network interface to handle soft resets

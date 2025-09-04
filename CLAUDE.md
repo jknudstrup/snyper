@@ -3,6 +3,7 @@
 **Current Mission**: **Refactor controller/server operations** ⚡
 
 **Planning Document**: `plans/controller-server-refactor-plan.md`
+Look in the planning document to determine which sub-objective to work on next.
 
 # CAPTAIN'S LOG
 
@@ -13,10 +14,6 @@
 **Issue Status**: **RESOLVED** - Global GPIO handler architecture eliminates memory leaks while preserving physical button functionality
 
 **Latest Achievement**: Revolutionary global GPIO handler system - no more circular references, stable memory management, full button functionality
-
-**Objective**: Test and evaluate dual-core threading for SNYPER performance improvements
-
-**Status**: **RESEARCH COMPLETE** - Ready to implement basic threading tests
 
 **Previous Achievement**: MasterController Pattern Architecture ✅ - Full system with SystemState/GameState separation, target registration, ping functionality, and target control commands
 
@@ -300,4 +297,5 @@ from gui.core.ugui import Screen
 self.reg_task(self.controller.start_server())
 self.reg_task(self.controller.start_game_loop())
 ```
+
 - Don't attempt to test project code by running 'python'. This is a Micropython project and, as such, the results of running normal Python will be misleadingly different.
