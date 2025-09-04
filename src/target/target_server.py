@@ -7,7 +7,7 @@ import asyncio
 from config.config import config
 from events import event_bus, emit_event, EventTypes
 from helpers import reset_network_interface
-from target.target_interface import raise_target, lower_target
+from target.peripheral_controller import peripheral_controller
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -71,7 +71,7 @@ class TargetServer:
             print(f"🎯 Target {self.node_id} standing up - ready for action!")
             
             # Execute hardware raise command
-            raise_target()
+            await peripheral_controller.raise_target()
             
             response_data = {"status": "standing", "target_id": self.node_id}
             return Response(json.dumps(response_data))
@@ -82,7 +82,7 @@ class TargetServer:
             print(f"🎯 Target {self.node_id} laying down - taking cover!")
             
             # Execute hardware lower command
-            lower_target()
+            await peripheral_controller.lower_target()
             
             response_data = {"status": "down", "target_id": self.node_id}
             return Response(json.dumps(response_data))
