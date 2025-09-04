@@ -29,7 +29,7 @@ def run_master():
     # return
     
     # Create controller instance
-    from master_controller import MasterController
+    from master.master_controller import MasterController
     controller = MasterController()
     
     # Start WiFi AP through controller

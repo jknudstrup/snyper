@@ -81,7 +81,7 @@ if [ "$ON_DEVICE" = true ]; then
     if [[ "$DEVICE_TYPE" == target_* ]]; then
         EXEC_FILE="target.py"
     else
-        EXEC_FILE="master.py"
+        EXEC_FILE="master/master.py"
     fi
     
     echo "📱 Running $EXEC_FILE on device..."
@@ -94,7 +94,7 @@ else
     if [[ "$DEVICE_TYPE" == target_* ]]; then
         RUN_FILE="target.py"
     else
-        RUN_FILE="master.py"
+        RUN_FILE="master/master.py"
     fi
     
     echo "💾 Mounting and running $RUN_FILE..."
