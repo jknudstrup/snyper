@@ -1,8 +1,8 @@
 # SNYPER Development Guide
 
-**Current Mission**: **Refactor controller/server operations** ⚡
+**Current Mission**: **Target Architecture Refactor** ⚡
 
-**Planning Document**: `plans/controller-server-refactor-plan.md`
+**Planning Document**: `plans/target-architecture-plan.md`
 Look in the planning document to determine which sub-objective to work on next.
 
 # CAPTAIN'S LOG
