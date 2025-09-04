@@ -6,14 +6,15 @@
 # This prevents circular dependencies and maintains clean architecture.
 
 # CRITICAL: Import heavy server components FIRST to get clean RAM!
-print("🚀 Pre-loading server components before GUI fragments memory...")
+# print("🚀 Pre-loading server components before GUI fragments memory...")
 # from master_server import MasterServer
 # from events import event_bus, emit_event, subscribe_to_event, EventTypes
-print("✅ Server components loaded in clean memory!")
+# print("✅ Server components loaded in clean memory!")
 
-# hardware_setup must be imported before other modules because of RAM use.
-import hardware_setup  # Create a display instance
-from gui.core.ugui import Screen
+# Initialize display globals before other modules because of RAM use.
+from display.init_display_globals import initialize_display_globals
+initialize_display_globals()  # Create display instance and GPIO handlers
+from gui.core.ugui import Screen # type: ignore
 
 # ========== ENTRY POINT ==========
 

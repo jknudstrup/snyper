@@ -8,39 +8,6 @@ from gui.core.colors import *
 from machine import Pin
 import uasyncio as asyncio
 
-# Global GPIO handlers - created once, persist across screens
-_global_button_a = None
-_global_button_b = None  
-_global_button_x = None
-
-def _init_global_buttons():
-    """Initialize global GPIO handlers once"""
-    global _global_button_a, _global_button_b, _global_button_x
-    if _global_button_a is None:
-        try:
-            _global_button_a = Pushbutton(Pin(15, Pin.IN, Pin.PULL_UP))
-            _global_button_a.release_func(_handle_button_a_press)
-            _global_button_b = Pushbutton(Pin(17, Pin.IN, Pin.PULL_UP))
-            _global_button_b.release_func(_handle_button_b_press)
-            _global_button_x = Pushbutton(Pin(19, Pin.IN, Pin.PULL_UP))
-            _global_button_x.release_func(_handle_button_x_press)
-        except Exception as e:
-            print(f"⚠️ Global GPIO setup failed: {e}")
-
-def _handle_button_a_press():
-    """Global A button handler - find current screen's ButtonA and trigger it"""
-    if Screen.current_screen and hasattr(Screen.current_screen, 'button_a'):
-        Screen.current_screen.button_a.trigger()
-
-def _handle_button_b_press():
-    """Global B button handler - find current screen's ButtonB and trigger it"""
-    if Screen.current_screen and hasattr(Screen.current_screen, 'button_b'):
-        Screen.current_screen.button_b.trigger()
-
-def _handle_button_x_press():
-    """Global X button handler - find current screen's ButtonX and trigger it"""  
-    if Screen.current_screen and hasattr(Screen.current_screen, 'button_x'):
-        Screen.current_screen.button_x.trigger()
 
 class PassiveButton(Widget):
     """Non-focusable button for display-only purposes with callback support"""
@@ -118,37 +85,6 @@ class PassiveButton(Widget):
                 revert = asyncio.create_task(self.shownormal())
                 Screen.current_screen.reg_task(revert, True)  # Cancel on screen change
 
-class BaseScreen(Screen):
-    def __init__(self):
-        def my_callback(button, arg):
-            print('Button pressed', arg)
-        super().__init__()
-        wri = CWriter(ssd, font, GREEN, BLACK, verbose=False)
-        col = 2
-        row = 2
-        Label(wri, row, col, 'CARNIVAL SHOOTER')
-        row = 50
-        Button(wri, row, col, text='Yes', callback=my_callback, args=('Yes',))
-        col += 60
-        Button(wri, row, col, text='No', callback=my_callback, args=('No',))
-        CloseButton(wri)  # Quit the application
-
-def start_display():
-    """Start the display - this runs synchronously like the hello world example!"""
-    print('🎪 Display starting - just like the docs show!')
-    print('🖥️  Calling Screen.change(BaseScreen)...')
-    Screen.change(BaseScreen)  # This should work now!
-    print('🖥️  Screen.change() returned - display should be active!')
-
-
-def test_display():
-    """Non-async test function just like the hello world"""
-    print('Simple demo: testing display.')
-    Screen.change(BaseScreen)
-
-
-# Individual Physical Button Classes
-# These replace the complex PhysicalButtonOverlay singleton system
 
 class PhysicalButton(PassiveButton):
     """Base class for physical buttons - visual only, hardware handled globally"""
@@ -172,6 +108,7 @@ class PhysicalButton(PassiveButton):
         super().__init__(wri, **defaults)
         
         # Initialize global GPIO handlers once
+        from display.gpio_handlers import _init_global_buttons
         _init_global_buttons()
     
     def _default_callback(self, button):

@@ -6,8 +6,8 @@ from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
 import gui.fonts.freesans20 as freesans20
-from hardware_setup import ssd
-from display import ButtonY
+from gui.core.ugui import ssd
+from display.side_buttons import ButtonY
 from views.screen_helpers import navigate_to_screen
 import gc
 

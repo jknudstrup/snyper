@@ -5,8 +5,8 @@ from gui.widgets import Label, Button
 from gui.core.writer import CWriter
 from gui.core.colors import *
 import gui.fonts.font14 as font14
-from hardware_setup import ssd
-from display import ButtonA, ButtonY
+from gui.core.ugui import ssd
+from display.side_buttons import ButtonA, ButtonY
 from views.screen_helpers import navigate_to_main
 
 class OptionsScreen(Screen):

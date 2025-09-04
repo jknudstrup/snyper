@@ -21,7 +21,7 @@ import framebuf
 import gc
 import micropython
 import asyncio
-from drivers.boolpalette import BoolPalette
+from display.drivers.boolpalette import BoolPalette
 
 # User orientation constants
 # Waveshare Pico res touch defaults to portrait. Requires PORTRAIT for landscape orientation.

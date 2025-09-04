@@ -15,7 +15,7 @@ import gc
 
 # The driver import path might need to be adjusted depending on your file structure.
 # Assuming you have the st7789 driver library installed.
-from drivers.st7789 import *
+from display.drivers.st7789 import *
 
 # This is a generic class name, but your driver class might be named differently
 # (e.g., in your earlier code it was LCD_1inch3).
