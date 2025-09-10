@@ -1,16 +1,10 @@
 # SNYPER Development Guide
 
-**Current Mission**: **AWAITING NEXT ASSIGNMENT** 🎯
+**Current Mission**: **Dual-Core Exploration** 🚀
 
-**Latest Mission ACCOMPLISHED**: **Target Architecture Refactor** ✅
+**Planning Document**: `plans/dual-core-exploration-plan.md`
 
 # CAPTAIN'S LOG
-
-## CURRENT STATUS
-
-**Mission ACCOMPLISHED**: Target Architecture Refactor Complete ✅
-
-**Issue Status**: **RESOLVED** - Executive/subordinate architecture implemented with global event queue system
 
 **Latest Achievement**: Revolutionary target architecture - clean executive/subordinate pattern, global event queue, async loop coordination, no more broken event system dependencies
 
@@ -162,17 +156,20 @@ For multi-step features, create a plan document (like `gui-restructure-plan.md`)
 ```
 
 **PLANNING DOCUMENT STRUCTURE**: When creating a plan document, include:
+
 1. **CURRENT PHASE: (N)** indicator immediately after the title
 2. **Phase List** (table of contents) showing all phases - create this ONCE when the plan is first written
 3. Only update the Phase List when phases are added, changed, or deleted - NOT for status updates
 
 ```markdown
 # Plan Title
+
 CURRENT PHASE: 3
 
 ## Phase List
+
 - Phase 1: Server Creation Refactor
-- Phase 2: Communication Architecture Design  
+- Phase 2: Communication Architecture Design
 - Phase 3: WiFi Access Point Integration
 - Phase 4: Method Cleanup and Testing
 ```
