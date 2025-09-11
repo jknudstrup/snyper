@@ -10,6 +10,7 @@ from gui.core.ugui import ssd
 from display.side_buttons import ButtonY
 from views.screen_helpers import navigate_to_screen
 import gc
+import uasyncio
 
 class MainScreen(Screen):
     """SNYPER Main Menu - Navigation Hub"""
@@ -47,6 +48,9 @@ class MainScreen(Screen):
         row += 40  
         Button(wri, row, col, text="Debug", callback=navigate_to_screen(DebugScreen, self.controller), args=("debug",), height=25)
         
+        row += 40
+        Button(wri, row, col, text="Test Async", callback=self._test_async_callback, height=25)
+        
         self.button_y = ButtonY(wri)  # Visual select indicator only
         print(f"✨ MainScreen #{id(self)} ready! RAM: {gc.mem_free()}")
         
@@ -68,3 +72,14 @@ class MainScreen(Screen):
             
         
         gc.collect()
+    
+    def _test_async_callback(self, button):
+        """Callback for Test Async button - starts async test"""
+        print("🧪 Test Async button pressed - starting async test...")
+        self.reg_task(self._test_async_function())
+    
+    async def _test_async_function(self):
+        """Test async function with 3-second delay to verify non-blocking behavior"""
+        print("⏳ Starting 3-second async test - UI should remain responsive...")
+        await uasyncio.sleep_ms(3000)  # 3 seconds
+        print("✅ Async test completed! UI should have remained responsive during wait.")
