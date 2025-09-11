@@ -1,7 +1,7 @@
 import uasyncio
 from config.config import config
 from helpers import initialize_access_point
-from utils.socket_protocol import MessageLineParser, SocketMessage
+from utils.socket_protocol import MessageLineParser, SocketMessage, send_message
 
 class MasterServer:
     """Master server class to handle socket communication - let me tell you something, this is gonna be AWESOME!"""
@@ -123,17 +123,13 @@ class MasterServer:
             writer.write(error_msg.to_line().encode('utf-8'))
             await writer.drain()
 
-    async def _send_command_to_target(self, target_ip, target_id, command_type, expected_response_type):
-        """Generic method to send commands to targets via socket communication"""
+    async def _send_command_to_target(self, command_msg, target_ip):
+        """Generic method to send pre-constructed command messages to targets"""
+        target_id = command_msg.target_id
+        command_type = command_msg.type
+        
         try:
             print(f"🔌 Socket {command_type.lower()} to {target_id} at {target_ip}:{self.port}")
-            
-            # Create command message
-            command_msg = SocketMessage(
-                command_type,
-                target_id=target_id,
-                data={"from": "master"}
-            )
             
             # Connect to target
             reader, writer = await uasyncio.wait_for(
@@ -155,7 +151,7 @@ class MasterServer:
                 )
                 
                 if not response_data:
-                    return {"status": "failed", "error": "No response"}
+                    return {"status": "failed", "error": "No response", "ip": target_ip}
                 
                 # Parse response
                 response_str = response_data.decode('utf-8').strip()
@@ -163,17 +159,12 @@ class MasterServer:
                 
                 response_message = SocketMessage.from_json(response_str)
                 
-                if response_message.type == expected_response_type:
-                    status = response_message.data.get("status", "unknown")
-                    print(f"✅ {target_id} responded with {expected_response_type}: {status}")
-                    return {"status": status, "ip": target_ip}
-                elif response_message.type == "error":
-                    error_msg = response_message.data.get("error", "Unknown error")
-                    print(f"💥 {target_id} responded with error: {error_msg}")
-                    return {"status": "error", "error": error_msg, "ip": target_ip}
-                else:
-                    print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
-                    return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
+                # Return raw response data for caller to process
+                return {
+                    "status": "success",
+                    "ip": target_ip,
+                    "response_message": response_message
+                }
                     
             finally:
                 writer.close()
@@ -185,76 +176,123 @@ class MasterServer:
 
     async def ping_target(self, target_ip, target_id):
         """Ping a specific target using socket communication"""
-        return await self._send_command_to_target(target_ip, target_id, "PING", "pong")
+        # Create ping message
+        ping_msg = SocketMessage(
+            "PING",
+            target_id=target_id,
+            data={"from": "master"}
+        )
+        
+        # Send command and process response
+        result = await send_message(ping_msg, target_ip, self.port)
+        
+        if result["status"] == "failed":
+            return result
+        
+        # Process successful response
+        response_message = result["response_message"]
+        
+        if response_message.type == "pong":
+            status = response_message.data.get("status", "unknown")
+            print(f"✅ {target_id} responded with PONG: {status}")
+            return {"status": status, "ip": target_ip}
+        elif response_message.type == "error":
+            error_msg = response_message.data.get("error", "Unknown error")
+            print(f"💥 {target_id} responded with error: {error_msg}")
+            return {"status": "error", "error": error_msg, "ip": target_ip}
+        else:
+            print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+            return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
 
     async def raise_target(self, target_ip, target_id):
         """Send stand_up command to a specific target using socket communication"""
-        return await self._send_command_to_target(target_ip, target_id, "STAND_UP", "standing")
+        # Create stand_up message
+        stand_up_msg = SocketMessage(
+            "STAND_UP",
+            target_id=target_id,
+            data={"from": "master"}
+        )
+        
+        # Send command and process response
+        result = await send_message(stand_up_msg, target_ip, self.port)
+        
+        if result["status"] == "failed":
+            return result
+        
+        # Process successful response
+        response_message = result["response_message"]
+        
+        if response_message.type == "standing":
+            status = response_message.data.get("status", "unknown")
+            print(f"✅ {target_id} responded with STANDING: {status}")
+            return {"status": status, "ip": target_ip}
+        elif response_message.type == "error":
+            error_msg = response_message.data.get("error", "Unknown error")
+            print(f"💥 {target_id} responded with error: {error_msg}")
+            return {"status": "error", "error": error_msg, "ip": target_ip}
+        else:
+            print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+            return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
 
     async def lower_target(self, target_ip, target_id):
         """Send lay_down command to a specific target using socket communication"""
-        return await self._send_command_to_target(target_ip, target_id, "LAY_DOWN", "down")
+        # Create lay_down message
+        lay_down_msg = SocketMessage(
+            "LAY_DOWN",
+            target_id=target_id,
+            data={"from": "master"}
+        )
+        
+        # Send command and process response
+        result = await send_message(lay_down_msg, target_ip, self.port)
+        
+        if result["status"] == "failed":
+            return result
+        
+        # Process successful response
+        response_message = result["response_message"]
+        
+        if response_message.type == "down":
+            status = response_message.data.get("status", "unknown")
+            print(f"✅ {target_id} responded with DOWN: {status}")
+            return {"status": status, "ip": target_ip}
+        elif response_message.type == "error":
+            error_msg = response_message.data.get("error", "Unknown error")
+            print(f"💥 {target_id} responded with error: {error_msg}")
+            return {"status": "error", "error": error_msg, "ip": target_ip}
+        else:
+            print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+            return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
 
     async def activate_target(self, target_ip, target_id, duration=5):
         """Send activate command to a specific target using socket communication"""
-        # Override the generic method to include duration data
-        try:
-            print(f"🔌 Socket activate to {target_id} at {target_ip}:{self.port}")
-            
-            # Create activate message with duration data
-            activate_msg = SocketMessage(
-                "ACTIVATE",
-                target_id=target_id,
-                data={"from": "master", "duration": duration}
-            )
-            
-            # Connect to target
-            reader, writer = await uasyncio.wait_for(
-                uasyncio.open_connection(target_ip, self.port),
-                timeout=5
-            )
-            
-            try:
-                # Send activate message
-                message_line = activate_msg.to_line()
-                print(f"📤 Sending ACTIVATE: {message_line.strip()}")
-                writer.write(message_line.encode('utf-8'))
-                await writer.drain()
-                
-                # Read response
-                response_data = await uasyncio.wait_for(
-                    reader.read(1024),
-                    timeout=5
-                )
-                
-                if not response_data:
-                    return {"status": "failed", "error": "No response"}
-                
-                # Parse response
-                response_str = response_data.decode('utf-8').strip()
-                print(f"📥 Received activate response: {response_str}")
-                
-                response_message = SocketMessage.from_json(response_str)
-                
-                if response_message.type == "activated":
-                    status = response_message.data.get("status", "unknown")
-                    print(f"✅ {target_id} responded with ACTIVATED: {status}")
-                    return {"status": status, "ip": target_ip, "duration": duration}
-                elif response_message.type == "error":
-                    error_msg = response_message.data.get("error", "Unknown error")
-                    print(f"💥 {target_id} responded with error: {error_msg}")
-                    return {"status": "error", "error": error_msg, "ip": target_ip}
-                else:
-                    print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
-                    return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
-                    
-            finally:
-                writer.close()
-                await writer.wait_closed()
-                
-        except Exception as e:
-            print(f"💥 Socket activate error to {target_id}: {e}")
-            return {"status": "failed", "error": str(e), "ip": target_ip}
+        # Create activate message with duration data
+        activate_msg = SocketMessage(
+            "ACTIVATE",
+            target_id=target_id,
+            data={"from": "master", "duration": duration}
+        )
+        
+        # Send command and process response
+        result = await send_message(activate_msg, target_ip, self.port)
+        
+        if result["status"] == "failed":
+            return result
+        
+        # Process successful response
+        response_message = result["response_message"]
+        
+        if response_message.type == "activated":
+            status = response_message.data.get("status", "unknown")
+            print(f"✅ {target_id} responded with ACTIVATED: {status}")
+            return {"status": status, "ip": target_ip, "duration": duration}
+        elif response_message.type == "error":
+            error_msg = response_message.data.get("error", "Unknown error")
+            print(f"💥 {target_id} responded with error: {error_msg}")
+            return {"status": "error", "error": error_msg, "ip": target_ip}
+        else:
+            print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+            return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
 
     async def start_server(self, debug=True):
         """Start socket-only server"""

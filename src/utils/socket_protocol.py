@@ -5,6 +5,7 @@
 
 import json
 import time
+import uasyncio
 
 class SocketMessage:
     """Represents a socket message in SNYPER protocol"""
@@ -157,3 +158,56 @@ Benefits:
 - Request/response correlation via message ID
 - Timestamps for debugging and timeout handling
 """
+
+# Generic Socket Communication Function
+
+async def send_message(command_msg, target_ip, port):
+    """Generic function to send pre-constructed command messages to targets via socket"""
+    target_id = command_msg.target_id
+    command_type = command_msg.type
+    
+    try:
+        print(f"🔌 Socket {command_type.lower()} to {target_id} at {target_ip}:{port}")
+        
+        # Connect to target
+        reader, writer = await uasyncio.wait_for(
+            uasyncio.open_connection(target_ip, port),
+            timeout=5
+        )
+        
+        try:
+            # Send command message
+            message_line = command_msg.to_line()
+            print(f"📤 Sending {command_type}: {message_line.strip()}")
+            writer.write(message_line.encode('utf-8'))
+            await writer.drain()
+            
+            # Read response
+            response_data = await uasyncio.wait_for(
+                reader.read(1024),
+                timeout=5
+            )
+            
+            if not response_data:
+                return {"status": "failed", "error": "No response", "ip": target_ip}
+            
+            # Parse response
+            response_str = response_data.decode('utf-8').strip()
+            print(f"📥 Received {command_type.lower()} response: {response_str}")
+            
+            response_message = SocketMessage.from_json(response_str)
+            
+            # Return raw response data for caller to process
+            return {
+                "status": "success",
+                "ip": target_ip,
+                "response_message": response_message
+            }
+                
+        finally:
+            writer.close()
+            await writer.wait_closed()
+            
+    except Exception as e:
+        print(f"💥 Socket {command_type.lower()} error to {target_id}: {e}")
+        return {"status": "failed", "error": str(e), "ip": target_ip}
