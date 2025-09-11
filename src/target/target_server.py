@@ -223,8 +223,12 @@ class TargetServer:
                     # Handle different message types
                     if message.type == "ping":
                         await self._handle_ping_command(message, writer)
+                    elif message.type == "stand_up":
+                        await self._handle_stand_up_command(message, writer)
+                    elif message.type == "lay_down":
+                        await self._handle_lay_down_command(message, writer)
                     else:
-                        # Send error for unsupported message types (for now)
+                        # Send error for unsupported message types
                         error_msg = SocketMessage(
                             "ERROR",
                             msg_id=message.id,
@@ -271,6 +275,78 @@ class TargetServer:
             
         except Exception as e:
             print(f"💥 Error sending PONG response: {e}")
+            # Send error response
+            error_msg = SocketMessage(
+                "ERROR",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={"error": str(e)}
+            )
+            writer.write(error_msg.to_line().encode('utf-8'))
+            await writer.drain()
+
+    async def _handle_stand_up_command(self, message, writer):
+        """Handle STAND_UP command from master"""
+        print(f"⬆️ Processing STAND_UP command from master")
+        
+        try:
+            # Emit event to controller (same as HTTP route)
+            await target_event_queue.put(TargetEvent(HTTP_COMMAND_UP))
+            
+            # Send STANDING response
+            standing_msg = SocketMessage(
+                "STANDING",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={
+                    "status": "command_queued",
+                    "message": "Stand up command queued"
+                }
+            )
+            
+            response_line = standing_msg.to_line()
+            print(f"📤 Sending STANDING: {response_line.strip()}")
+            writer.write(response_line.encode('utf-8'))
+            await writer.drain()
+            
+        except Exception as e:
+            print(f"💥 Error processing STAND_UP command: {e}")
+            # Send error response
+            error_msg = SocketMessage(
+                "ERROR",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={"error": str(e)}
+            )
+            writer.write(error_msg.to_line().encode('utf-8'))
+            await writer.drain()
+
+    async def _handle_lay_down_command(self, message, writer):
+        """Handle LAY_DOWN command from master"""
+        print(f"⬇️ Processing LAY_DOWN command from master")
+        
+        try:
+            # Emit event to controller (same as HTTP route)
+            await target_event_queue.put(TargetEvent(HTTP_COMMAND_DOWN))
+            
+            # Send DOWN response
+            down_msg = SocketMessage(
+                "DOWN",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={
+                    "status": "command_queued",
+                    "message": "Lay down command queued"
+                }
+            )
+            
+            response_line = down_msg.to_line()
+            print(f"📤 Sending DOWN: {response_line.strip()}")
+            writer.write(response_line.encode('utf-8'))
+            await writer.drain()
+            
+        except Exception as e:
+            print(f"💥 Error processing LAY_DOWN command: {e}")
             # Send error response
             error_msg = SocketMessage(
                 "ERROR",

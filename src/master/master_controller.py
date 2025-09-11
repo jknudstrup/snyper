@@ -3,7 +3,6 @@
 # Single controller for managing all SNYPER system state and operations
 
 import uasyncio
-import urequests
 from master.master_server import MasterServer
 
 
@@ -106,39 +105,31 @@ class MasterController:
             return {}
         
         results = {}
-        print(f"🚀 Sending STAND UP command to {len(self.targets)} targets...")
+        print(f"🚀 Socket sending STAND UP command to {len(self.targets)} targets...")
         
         for target_name, target_info in self.targets.items():
             target_ip = target_info["ip"]
-            target_url = f"http://{target_ip}:{self.server.port}/stand_up"
             
             try:
-                print(f"⬆️ Commanding {target_name} to stand up...")
-                # Yield control before blocking HTTP request
-                await uasyncio.sleep_ms(0)
-                response = urequests.get(target_url, timeout=3)
+                print(f"⬆️ Socket commanding {target_name} to stand up...")
+                # Use socket stand_up instead of HTTP
+                result = await self.server.raise_target(target_ip, target_name)
+                results[target_name] = result
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    status = data.get("status")
-                    if status == "standing":
-                        print(f"✅ {target_name} is now STANDING - ready for action!")
-                        results[target_name] = {"status": "standing", "ip": target_ip}
-                    elif status == "command_queued":
-                        print(f"✅ {target_name} received STAND UP command - processing...")
-                        results[target_name] = {"status": "command_queued", "ip": target_ip}
-                    else:
-                        print(f"⚠️ {target_name} responded but status unexpected: {data}")
-                        results[target_name] = {"status": "unknown", "ip": target_ip}
+                status = result.get("status")
+                if status == "standing":
+                    print(f"✅ {target_name} is now STANDING - ready for action!")
+                elif status == "command_queued":
+                    print(f"✅ {target_name} received STAND UP command - processing...")
+                elif status == "failed":
+                    error = result.get("error", "Unknown error")
+                    print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
                 else:
-                    print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
-                    results[target_name] = {"status": "error", "ip": target_ip}
-                
-                response.close()
+                    print(f"⚠️ {target_name} responded with status: {status}")
                 
             except Exception as e:
-                print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
-                results[target_name] = {"status": "failed", "ip": target_ip}
+                print(f"💥 {target_name} at {target_ip} stand_up error: {e}")
+                results[target_name] = {"status": "failed", "ip": target_ip, "error": str(e)}
             
             # Allow GUI to stay responsive between commands
             await uasyncio.sleep_ms(100)
@@ -152,39 +143,31 @@ class MasterController:
             return {}
         
         results = {}
-        print(f"🚀 Sending LAY DOWN command to {len(self.targets)} targets...")
+        print(f"🚀 Socket sending LAY DOWN command to {len(self.targets)} targets...")
         
         for target_name, target_info in self.targets.items():
             target_ip = target_info["ip"]
-            target_url = f"http://{target_ip}:{self.server.port}/lay_down"
             
             try:
-                print(f"⬇️ Commanding {target_name} to lay down...")
-                # Yield control before blocking HTTP request
-                await uasyncio.sleep_ms(0)
-                response = urequests.get(target_url, timeout=3)
+                print(f"⬇️ Socket commanding {target_name} to lay down...")
+                # Use socket lay_down instead of HTTP
+                result = await self.server.lower_target(target_ip, target_name)
+                results[target_name] = result
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    status = data.get("status")
-                    if status == "down":
-                        print(f"✅ {target_name} is now DOWN - taking cover!")
-                        results[target_name] = {"status": "down", "ip": target_ip}
-                    elif status == "command_queued":
-                        print(f"✅ {target_name} received LAY DOWN command - processing...")
-                        results[target_name] = {"status": "command_queued", "ip": target_ip}
-                    else:
-                        print(f"⚠️ {target_name} responded but status unexpected: {data}")
-                        results[target_name] = {"status": "unknown", "ip": target_ip}
+                status = result.get("status")
+                if status == "down":
+                    print(f"✅ {target_name} is now DOWN - taking cover!")
+                elif status == "command_queued":
+                    print(f"✅ {target_name} received LAY DOWN command - processing...")
+                elif status == "failed":
+                    error = result.get("error", "Unknown error")
+                    print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
                 else:
-                    print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
-                    results[target_name] = {"status": "error", "ip": target_ip}
-                
-                response.close()
+                    print(f"⚠️ {target_name} responded with status: {status}")
                 
             except Exception as e:
-                print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
-                results[target_name] = {"status": "failed", "ip": target_ip}
+                print(f"💥 {target_name} at {target_ip} lay_down error: {e}")
+                results[target_name] = {"status": "failed", "ip": target_ip, "error": str(e)}
             
             # Allow GUI to stay responsive between commands
             await uasyncio.sleep_ms(100)

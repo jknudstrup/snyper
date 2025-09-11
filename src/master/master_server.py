@@ -219,6 +219,126 @@ class MasterServer:
             print(f"💥 Socket ping error to {target_id}: {e}")
             return {"status": "failed", "error": str(e), "ip": target_ip}
 
+    async def raise_target(self, target_ip, target_id):
+        """Send stand_up command to a specific target using socket communication"""
+        try:
+            print(f"🔌 Socket stand_up to {target_id} at {target_ip}:{self.port}")
+            
+            # Create stand_up message
+            stand_up_msg = SocketMessage(
+                "STAND_UP",
+                target_id=target_id,
+                data={"from": "master"}
+            )
+            
+            # Connect to target
+            reader, writer = await uasyncio.wait_for(
+                uasyncio.open_connection(target_ip, self.port),
+                timeout=5
+            )
+            
+            try:
+                # Send stand_up message
+                message_line = stand_up_msg.to_line()
+                print(f"📤 Sending STAND_UP: {message_line.strip()}")
+                writer.write(message_line.encode('utf-8'))
+                await writer.drain()
+                
+                # Read response
+                response_data = await uasyncio.wait_for(
+                    reader.read(1024),
+                    timeout=5
+                )
+                
+                if not response_data:
+                    return {"status": "failed", "error": "No response"}
+                
+                # Parse response
+                response_str = response_data.decode('utf-8').strip()
+                print(f"📥 Received stand_up response: {response_str}")
+                
+                response_message = SocketMessage.from_json(response_str)
+                
+                if response_message.type == "standing":
+                    status = response_message.data.get("status", "unknown")
+                    print(f"✅ {target_id} responded with STANDING: {status}")
+                    return {"status": status, "ip": target_ip}
+                elif response_message.type == "error":
+                    error_msg = response_message.data.get("error", "Unknown error")
+                    print(f"💥 {target_id} responded with error: {error_msg}")
+                    return {"status": "error", "error": error_msg, "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+                    return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
+                    
+            finally:
+                writer.close()
+                await writer.wait_closed()
+                
+        except Exception as e:
+            print(f"💥 Socket stand_up error to {target_id}: {e}")
+            return {"status": "failed", "error": str(e), "ip": target_ip}
+
+    async def lower_target(self, target_ip, target_id):
+        """Send lay_down command to a specific target using socket communication"""
+        try:
+            print(f"🔌 Socket lay_down to {target_id} at {target_ip}:{self.port}")
+            
+            # Create lay_down message
+            lay_down_msg = SocketMessage(
+                "LAY_DOWN",
+                target_id=target_id,
+                data={"from": "master"}
+            )
+            
+            # Connect to target
+            reader, writer = await uasyncio.wait_for(
+                uasyncio.open_connection(target_ip, self.port),
+                timeout=5
+            )
+            
+            try:
+                # Send lay_down message
+                message_line = lay_down_msg.to_line()
+                print(f"📤 Sending LAY_DOWN: {message_line.strip()}")
+                writer.write(message_line.encode('utf-8'))
+                await writer.drain()
+                
+                # Read response
+                response_data = await uasyncio.wait_for(
+                    reader.read(1024),
+                    timeout=5
+                )
+                
+                if not response_data:
+                    return {"status": "failed", "error": "No response"}
+                
+                # Parse response
+                response_str = response_data.decode('utf-8').strip()
+                print(f"📥 Received lay_down response: {response_str}")
+                
+                response_message = SocketMessage.from_json(response_str)
+                
+                if response_message.type == "down":
+                    status = response_message.data.get("status", "unknown")
+                    print(f"✅ {target_id} responded with DOWN: {status}")
+                    return {"status": status, "ip": target_ip}
+                elif response_message.type == "error":
+                    error_msg = response_message.data.get("error", "Unknown error")
+                    print(f"💥 {target_id} responded with error: {error_msg}")
+                    return {"status": "error", "error": error_msg, "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+                    return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
+                    
+            finally:
+                writer.close()
+                await writer.wait_closed()
+                
+        except Exception as e:
+            print(f"💥 Socket lay_down error to {target_id}: {e}")
+            return {"status": "failed", "error": str(e), "ip": target_ip}
+
     async def start_server(self, debug=True):
         """Start socket-only server"""
         print(f"🌐 Master server starting socket-only on {self.server_ip}:{self.port}")
