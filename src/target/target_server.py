@@ -4,7 +4,7 @@ import uasyncio
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
-from utils.socket_protocol import SocketMessage, MessageLineParser
+from utils.socket_protocol import SocketMessage, MessageLineParser, send_message
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -64,49 +64,27 @@ class TargetServer:
                 data={"client_id": self.node_id}
             )
             
-            # Connect to master socket server
-            reader, writer = await uasyncio.wait_for(
-                uasyncio.open_connection(master_ip, socket_port),
-                timeout=5
-            )
+            # Use generic send_message helper
+            result = await send_message(register_msg, master_ip, socket_port)
             
-            try:
-                # Send registration message
-                message_line = register_msg.to_line()
-                print(f"📤 Sending socket registration: {message_line.strip()}")
-                writer.write(message_line.encode('utf-8'))
-                await writer.drain()
-                
-                # Read response
-                response_data = await uasyncio.wait_for(
-                    reader.read(1024),
-                    timeout=5
-                )
-                
-                if not response_data:
-                    raise OSError("Connection closed by master")
-                
-                # Parse response
-                response_str = response_data.decode('utf-8').strip()
-                print(f"📥 Received socket response: {response_str}")
-                
-                response_message = SocketMessage.from_json(response_str)
-                
-                # Check response
-                if response_message.type == "registered":
-                    print(f"✅ Successfully socket-registered target {self.node_id} with master!")
-                    return True
-                elif response_message.type == "error":
-                    error_msg = response_message.data.get("error", "Unknown error")
-                    print(f"💥 Socket registration error from master: {error_msg}")
-                    return False
-                else:
-                    print(f"⚠️ Socket registration unexpected response type: {response_message.type}")
-                    return False
-                    
-            finally:
-                writer.close()
-                await writer.wait_closed()
+            if result["status"] == "failed":
+                print(f"💥 Socket registration error: {result.get('error', 'Unknown error')}")
+                return False
+            
+            # Process successful response
+            response_message = result["response_message"]
+            
+            # Check response
+            if response_message.type == "registered":
+                print(f"✅ Successfully socket-registered target {self.node_id} with master!")
+                return True
+            elif response_message.type == "error":
+                error_msg = response_message.data.get("error", "Unknown error")
+                print(f"💥 Socket registration error from master: {error_msg}")
+                return False
+            else:
+                print(f"⚠️ Socket registration unexpected response type: {response_message.type}")
+                return False
                 
         except Exception as e:
             print(f"💥 Socket registration error: {e}")
