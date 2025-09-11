@@ -62,39 +62,64 @@ class MasterController:
         print(f"📋 Controller returning {len(targets)} targets: {targets}")
         return targets
     
+    async def _message_all(self, server_method):
+        """Send messages to all registered targets using multiplexed communication"""
+        if not self.targets:
+            return {}
+        
+        # Create tasks for all targets simultaneously
+        tasks = []
+        target_names = []
+        
+        for target_name, target_info in self.targets.items():
+            target_ip = target_info["ip"]
+            # Create task for this target
+            task = server_method(target_ip, target_name)
+            tasks.append(task)
+            target_names.append(target_name)
+        
+        # Execute all tasks concurrently
+        results = await uasyncio.gather(*tasks, return_exceptions=True)
+        
+        # Build results dictionary
+        final_results = {}
+        for target_name, result in zip(target_names, results):
+            if isinstance(result, Exception):
+                # Handle exceptions from failed tasks
+                final_results[target_name] = {
+                    "status": "failed", 
+                    "ip": self.targets[target_name]["ip"],
+                    "error": str(result)
+                }
+            else:
+                # Use the result from successful task
+                final_results[target_name] = result
+        
+        return final_results
+    
     async def ping_targets(self):
         """Ping all registered targets and return results"""
         if not self.targets:
             print("⚠️ No targets registered to ping")
             return {}
         
-        results = {}
         print(f"🚀 Socket pinging {len(self.targets)} registered targets...")
         
-        for target_name, target_info in self.targets.items():
-            target_ip = target_info["ip"]
+        # Use multiplexed communication
+        results = await self._message_all(self.server.ping_target)
+        
+        # Process results for logging
+        for target_name, result in results.items():
+            target_ip = self.targets[target_name]["ip"]
+            status = result.get("status")
             
-            try:
-                print(f"⚡ Socket pinging {target_name} at {target_ip}...")
-                # Use socket ping instead of HTTP
-                result = await self.server.ping_target(target_ip, target_name)
-                results[target_name] = result
-                
-                status = result.get("status")
-                if status == "alive":
-                    print(f"✅ {target_name} at {target_ip} is ALIVE AND KICKING!")
-                elif status == "failed":
-                    error = result.get("error", "Unknown error")
-                    print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
-                else:
-                    print(f"⚠️ {target_name} responded with status: {status}")
-                
-            except Exception as e:
-                print(f"💥 {target_name} at {target_ip} ping error: {e}")
-                results[target_name] = {"status": "failed", "ip": target_ip, "error": str(e)}
-            
-            # Allow GUI to stay responsive between pings
-            await uasyncio.sleep_ms(100)
+            if status == "alive":
+                print(f"✅ {target_name} at {target_ip} is ALIVE AND KICKING!")
+            elif status == "failed":
+                error = result.get("error", "Unknown error")
+                print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
+            else:
+                print(f"⚠️ {target_name} responded with status: {status}")
         
         return results
     
@@ -104,35 +129,25 @@ class MasterController:
             print("⚠️ No targets registered to raise")
             return {}
         
-        results = {}
         print(f"🚀 Socket sending STAND UP command to {len(self.targets)} targets...")
         
-        for target_name, target_info in self.targets.items():
-            target_ip = target_info["ip"]
+        # Use multiplexed communication
+        results = await self._message_all(self.server.raise_target)
+        
+        # Process results for logging
+        for target_name, result in results.items():
+            target_ip = self.targets[target_name]["ip"]
+            status = result.get("status")
             
-            try:
-                print(f"⬆️ Socket commanding {target_name} to stand up...")
-                # Use socket stand_up instead of HTTP
-                result = await self.server.raise_target(target_ip, target_name)
-                results[target_name] = result
-                
-                status = result.get("status")
-                if status == "standing":
-                    print(f"✅ {target_name} is now STANDING - ready for action!")
-                elif status == "command_queued":
-                    print(f"✅ {target_name} received STAND UP command - processing...")
-                elif status == "failed":
-                    error = result.get("error", "Unknown error")
-                    print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
-                else:
-                    print(f"⚠️ {target_name} responded with status: {status}")
-                
-            except Exception as e:
-                print(f"💥 {target_name} at {target_ip} stand_up error: {e}")
-                results[target_name] = {"status": "failed", "ip": target_ip, "error": str(e)}
-            
-            # Allow GUI to stay responsive between commands
-            await uasyncio.sleep_ms(100)
+            if status == "standing":
+                print(f"✅ {target_name} is now STANDING - ready for action!")
+            elif status == "command_queued":
+                print(f"✅ {target_name} received STAND UP command - processing...")
+            elif status == "failed":
+                error = result.get("error", "Unknown error")
+                print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
+            else:
+                print(f"⚠️ {target_name} responded with status: {status}")
         
         return results
     
@@ -142,35 +157,25 @@ class MasterController:
             print("⚠️ No targets registered to lower")
             return {}
         
-        results = {}
         print(f"🚀 Socket sending LAY DOWN command to {len(self.targets)} targets...")
         
-        for target_name, target_info in self.targets.items():
-            target_ip = target_info["ip"]
+        # Use multiplexed communication
+        results = await self._message_all(self.server.lower_target)
+        
+        # Process results for logging
+        for target_name, result in results.items():
+            target_ip = self.targets[target_name]["ip"]
+            status = result.get("status")
             
-            try:
-                print(f"⬇️ Socket commanding {target_name} to lay down...")
-                # Use socket lay_down instead of HTTP
-                result = await self.server.lower_target(target_ip, target_name)
-                results[target_name] = result
-                
-                status = result.get("status")
-                if status == "down":
-                    print(f"✅ {target_name} is now DOWN - taking cover!")
-                elif status == "command_queued":
-                    print(f"✅ {target_name} received LAY DOWN command - processing...")
-                elif status == "failed":
-                    error = result.get("error", "Unknown error")
-                    print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
-                else:
-                    print(f"⚠️ {target_name} responded with status: {status}")
-                
-            except Exception as e:
-                print(f"💥 {target_name} at {target_ip} lay_down error: {e}")
-                results[target_name] = {"status": "failed", "ip": target_ip, "error": str(e)}
-            
-            # Allow GUI to stay responsive between commands
-            await uasyncio.sleep_ms(100)
+            if status == "down":
+                print(f"✅ {target_name} is now DOWN - taking cover!")
+            elif status == "command_queued":
+                print(f"✅ {target_name} received LAY DOWN command - processing...")
+            elif status == "failed":
+                error = result.get("error", "Unknown error")
+                print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
+            else:
+                print(f"⚠️ {target_name} responded with status: {status}")
         
         return results
     
