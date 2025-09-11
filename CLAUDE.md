@@ -1,12 +1,12 @@
 # SNYPER Development Guide
 
-**Current Mission**: **Socket Communication Migration** 🚀
+**Current Mission**: **Dual Core Exploration** 🚀
 
-**Planning Document**: `plans/socket-communication-migration.md`
+**Planning Document**: `plans/dual-core-exploration-plan.md`
 
 # CAPTAIN'S LOG
 
-**Latest Achievement**: UI Blocking Issue Identified and Solution Designed ✅ - Discovered urequests.get() blocks event loop despite async wrapping, designed comprehensive socket-based communication migration to replace HTTP with true async messaging
+**Latest Achievement**: Socket Communication Migration Complete ✅ - Successfully replaced blocking HTTP with true async socket communication, eliminating UI blocking and enabling real-time target communication
 
 **Previous Achievement**: Physical Button Memory Leak Eliminated ✅ - Global GPIO handler architecture eliminates memory leaks while preserving physical button functionality
 
@@ -43,7 +43,7 @@
 - `master_controller.py` - 🎯 **CONTROLLER CORE** (SystemState, GameState, target management)
 - `master_server.py` - 🌐 HTTP server (uses controller for state management)
 - `target_server.py` - 🎯 Target endpoints with ping responses + control commands
-- `helpers.py` - 🔧 Shared utilities (network reset bullshit eliminator)
+- `utils/helpers.py` - 🔧 Shared utilities (network reset bullshit eliminator)
 
 ### Codebase Navigation Rules
 
@@ -90,7 +90,7 @@ For quick reference, you can look in the 'docs' folder to find:
 - **Controller pattern supremacy** - Single MasterController instance shared across all components
 - **State separation** - SystemState (persistent) vs GameState (game-specific) for clean architecture
 - **Target IP tracking** - Store IPs during registration for lightning-fast pinging
-- **Network interface reset on startup** - Prevents mysterious connection failures
+- **Network interface reset on startup** - Prevents mysterious connection failures using `utils/helpers.py`
 
 ## Development Commands
 
@@ -205,7 +205,7 @@ When a plan has been fully implemented, move the plan file to 'plans/done'
 - **Memory management** - Import heavy modules early, use `gc.collect()` when needed
 - **Async integration** - Use `self.reg_task()` for GUI-managed async tasks
 - **Error handling** - Print detailed errors for embedded debugging
-- **Network interfaces** - Always reset using `helpers.reset_network_interface()`
+- **Network interfaces** - Always reset using `utils.helpers.reset_network_interface()`
 - **Async imports** - **ALWAYS use `import uasyncio`** for MicroPython compatibility, never `import asyncio`
 - **Sleep calls** - Use `uasyncio.sleep_ms(milliseconds)` not `uasyncio.sleep(seconds)` for MicroPython
 
@@ -213,7 +213,7 @@ When a plan has been fully implemented, move the plan file to 'plans/done'
 
 - **Clear intent over clever code** - Be boring and obvious
 - **Single responsibility** - Functions do one thing well
-- **DRY principle** - Shared utilities in `helpers.py`
+- **DRY principle** - Shared utilities in `utils/helpers.py`
 - **Consistent patterns** - Match existing micropython-micro-gui usage
 
 ### Architecture Principles

@@ -2,7 +2,7 @@ import network
 import time
 import uasyncio
 from config.config import config
-from helpers import reset_network_interface
+from utils.helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
 from utils.socket_protocol import SocketMessage, SocketServer
 

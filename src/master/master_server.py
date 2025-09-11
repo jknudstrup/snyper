@@ -1,6 +1,6 @@
 import uasyncio
 from config.config import config
-from helpers import initialize_access_point
+from utils.helpers import initialize_access_point
 from utils.socket_protocol import SocketMessage, SocketServer
 
 class MasterServer(SocketServer):
