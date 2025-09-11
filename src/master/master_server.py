@@ -31,7 +31,7 @@ class MasterServer:
         print(f"🌐 Creating WiFi AP: {self.ssid}")
         
         # Use our new helper function with reset
-        self._ap = await initialize_access_point(self.ssid, self.password, reset=False)
+        self._ap = await initialize_access_point(self.ssid, self.password, reset=True)
         return self._ap
     
     def _setup_routes(self):
@@ -67,11 +67,11 @@ class MasterServer:
 
     async def start_socket_server(self):
         """Start the socket registration server"""
-        print(f"🔌 Starting socket server on {self.server_ip}:{self.port}")
+        print(f"🔌 Starting socket server on all interfaces:{self.port}")
         try:
             self.socket_server = await uasyncio.start_server(
                 self._handle_socket_client,
-                self.server_ip,
+                '0.0.0.0',  # Bind to all interfaces, not specific IP
                 self.port
             )
             print(f"✅ Socket server started on port {self.port}")
@@ -341,13 +341,13 @@ class MasterServer:
 
     async def start_server(self, debug=True):
         """Start socket-only server"""
-        print(f"🌐 Master server starting socket-only on {self.server_ip}:{self.port}")
+        print(f"🌐 Master server starting socket-only on all interfaces:{self.port}")
         
         # Start socket server only
         await self.start_socket_server()
         
         try:
-            print(f"✅ Master running socket-only mode on port {self.port}")
+            print(f"✅ Master running socket-only mode on port {self.port} (accessible at {self.server_ip}:{self.port})")
             # Keep socket server running (no HTTP server)
             while True:
                 await uasyncio.sleep(1)
