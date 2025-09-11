@@ -1,12 +1,12 @@
 # SNYPER Development Guide
 
-**Current Mission**: **Dual-Core Exploration** 🚀
+**Current Mission**: **Socket Communication Migration** 🚀
 
-**Planning Document**: `plans/dual-core-exploration-plan.md`
+**Planning Document**: `plans/socket-communication-migration.md`
 
 # CAPTAIN'S LOG
 
-**Latest Achievement**: Revolutionary target architecture - clean executive/subordinate pattern, global event queue, async loop coordination, no more broken event system dependencies
+**Latest Achievement**: UI Blocking Issue Identified and Solution Designed ✅ - Discovered urequests.get() blocks event loop despite async wrapping, designed comprehensive socket-based communication migration to replace HTTP with true async messaging
 
 **Previous Achievement**: Physical Button Memory Leak Eliminated ✅ - Global GPIO handler architecture eliminates memory leaks while preserving physical button functionality
 
