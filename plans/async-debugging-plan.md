@@ -98,7 +98,7 @@ async def ping_targets(self):
 
 **Goal**: Implement non-blocking server operations
 **Risk Level**: Medium
-**Status**: Pending
+**Status**: READY FOR TESTING ✅
 
 **Implementation Options**:
 1. **Add Event Loop Yields**: Insert `await uasyncio.sleep_ms(0)` between HTTP requests
@@ -106,7 +106,15 @@ async def ping_targets(self):
 3. **Implement Async HTTP**: Use async HTTP library or raw sockets (if available)
 4. **Concurrent Requests**: Use `uasyncio.gather()` for parallel pinging
 
-**Recommended Approach**: Start with option 1 (yields) + option 2 (reduced timeouts) as immediate fix, then consider async HTTP for optimal solution.
+**Implemented Approach**: Option 1 (yields) + Option 2 (reduced timeouts) for immediate fix.
 
-**Files to Modify**:
-- `src/master/master_controller.py` - Fix `ping_targets()`, `raise_all()`, `lower_all()` methods
+**Changes Made**:
+- ✅ `master_controller.py` - Added `await uasyncio.sleep_ms(0)` before each `urequests.get()` call
+- ✅ `master_controller.py` - Reduced timeout from 10s to 3s for all HTTP requests  
+- ✅ `target_server.py` - Added 3-second test delay to /ping endpoint (marked for cleanup)
+
+**Files Modified**:
+- `src/master/master_controller.py` - Fixed `ping_targets()` method
+- `src/target/target_server.py` - Added test delay to ping endpoint
+
+**Test Setup**: Target server now delays 3 seconds on ping responses to simulate slow network conditions and test UI responsiveness.

@@ -3,6 +3,7 @@ import json
 import network
 import time
 import urequests
+import uasyncio
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
@@ -55,12 +56,20 @@ class TargetServer:
         @self.app.route('/ping')
         async def ping(request):
             """Health check endpoint - still standing strong!"""
+            print(f'Target {self.node_id} was pinged')
+            
+            # ====== TEST CODE - REMOVE AFTER ASYNC DEBUGGING ======
+            # Adding 3-second delay to test UI responsiveness during long operations
+            print(f"🧪 TEST: Simulating 3-second delay on ping response...")
+            await uasyncio.sleep_ms(3000)
+            print(f"🧪 TEST: Delay complete, sending response")
+            # ====== END TEST CODE ======
+            
             response_data = {
                 "status": "alive", 
                 "target_id": self.node_id,
                 "message": "Target reporting for duty!"
             }
-            print(f'Target {self.node_id} was pinged')
             return Response(json.dumps(response_data))
 
         @self.app.route('/stand_up')

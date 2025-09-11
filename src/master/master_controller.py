@@ -78,7 +78,9 @@ class MasterController:
             
             try:
                 print(f"⚡ Pinging {target_name} at {target_ip}...")
-                response = urequests.get(target_url, timeout=10)
+                # Yield control before blocking HTTP request
+                await uasyncio.sleep_ms(0)
+                response = urequests.get(target_url, timeout=3)
                 
                 if response.status_code == 200:
                     data = response.json()
@@ -118,7 +120,9 @@ class MasterController:
             
             try:
                 print(f"⬆️ Commanding {target_name} to stand up...")
-                response = urequests.get(target_url, timeout=10)
+                # Yield control before blocking HTTP request
+                await uasyncio.sleep_ms(0)
+                response = urequests.get(target_url, timeout=3)
                 
                 if response.status_code == 200:
                     data = response.json()
@@ -162,7 +166,9 @@ class MasterController:
             
             try:
                 print(f"⬇️ Commanding {target_name} to lay down...")
-                response = urequests.get(target_url, timeout=10)
+                # Yield control before blocking HTTP request
+                await uasyncio.sleep_ms(0)
+                response = urequests.get(target_url, timeout=3)
                 
                 if response.status_code == 200:
                     data = response.json()
