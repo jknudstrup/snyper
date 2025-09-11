@@ -23,7 +23,6 @@ class MasterServer:
         
         # Socket server for new protocol
         self.socket_server = None
-        self.socket_port = self.port + 1  # Use port 8081 for socket protocol
         
         self._setup_routes()
     
@@ -68,14 +67,14 @@ class MasterServer:
 
     async def start_socket_server(self):
         """Start the socket registration server"""
-        print(f"🔌 Starting socket server on {self.server_ip}:{self.socket_port}")
+        print(f"🔌 Starting socket server on {self.server_ip}:{self.port}")
         try:
             self.socket_server = await uasyncio.start_server(
                 self._handle_socket_client,
                 self.server_ip,
-                self.socket_port
+                self.port
             )
-            print(f"✅ Socket server started on port {self.socket_port}")
+            print(f"✅ Socket server started on port {self.port}")
         except Exception as e:
             print(f"💥 Socket server failed to start: {e}")
             raise
@@ -160,17 +159,78 @@ class MasterServer:
             writer.write(error_msg.to_line().encode('utf-8'))
             await writer.drain()
 
+    async def ping_target(self, target_ip, target_id):
+        """Ping a specific target using socket communication"""
+        try:
+            print(f"🔌 Socket ping to {target_id} at {target_ip}:{self.port}")
+            
+            # Create ping message
+            ping_msg = SocketMessage(
+                "PING",
+                target_id=target_id,
+                data={"from": "master"}
+            )
+            
+            # Connect to target
+            reader, writer = await uasyncio.wait_for(
+                uasyncio.open_connection(target_ip, self.port),
+                timeout=5
+            )
+            
+            try:
+                # Send ping message
+                message_line = ping_msg.to_line()
+                print(f"📤 Sending ping: {message_line.strip()}")
+                writer.write(message_line.encode('utf-8'))
+                await writer.drain()
+                
+                # Read response
+                response_data = await uasyncio.wait_for(
+                    reader.read(1024),
+                    timeout=5
+                )
+                
+                if not response_data:
+                    return {"status": "failed", "error": "No response"}
+                
+                # Parse response
+                response_str = response_data.decode('utf-8').strip()
+                print(f"📥 Received ping response: {response_str}")
+                
+                response_message = SocketMessage.from_json(response_str)
+                
+                if response_message.type == "pong":
+                    status = response_message.data.get("status", "unknown")
+                    print(f"✅ {target_id} responded with PONG: {status}")
+                    return {"status": status, "ip": target_ip}
+                elif response_message.type == "error":
+                    error_msg = response_message.data.get("error", "Unknown error")
+                    print(f"💥 {target_id} responded with error: {error_msg}")
+                    return {"status": "error", "error": error_msg, "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+                    return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
+                    
+            finally:
+                writer.close()
+                await writer.wait_closed()
+                
+        except Exception as e:
+            print(f"💥 Socket ping error to {target_id}: {e}")
+            return {"status": "failed", "error": str(e), "ip": target_ip}
+
     async def start_server(self, debug=True):
-        """Start both HTTP and socket servers"""
-        print(f"🌐 Master server starting on {self.server_ip}:{self.port} - whatcha gonna do!")
+        """Start socket-only server"""
+        print(f"🌐 Master server starting socket-only on {self.server_ip}:{self.port}")
         
-        # Start socket server first
+        # Start socket server only
         await self.start_socket_server()
         
         try:
-            print(f"🚀 About to start HTTP server on {self.server_ip}:{self.port}")
-            await self.app.start_server(host=self.server_ip, port=self.port, debug=debug)
-            print(f"✅ HTTP server started successfully!")
+            print(f"✅ Master running socket-only mode on port {self.port}")
+            # Keep socket server running (no HTTP server)
+            while True:
+                await uasyncio.sleep(1)
         except KeyboardInterrupt:
             print("🛑 Master server received shutdown signal!")
             # Clean up socket server

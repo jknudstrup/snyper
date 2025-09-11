@@ -70,35 +70,29 @@ class MasterController:
             return {}
         
         results = {}
-        print(f"🚀 Pinging {len(self.targets)} registered targets...")
+        print(f"🚀 Socket pinging {len(self.targets)} registered targets...")
         
         for target_name, target_info in self.targets.items():
             target_ip = target_info["ip"]
-            target_url = f"http://{target_ip}:{self.server.port}/ping"
             
             try:
-                print(f"⚡ Pinging {target_name} at {target_ip}...")
-                # Yield control before blocking HTTP request
-                await uasyncio.sleep_ms(0)
-                response = urequests.get(target_url, timeout=3)
+                print(f"⚡ Socket pinging {target_name} at {target_ip}...")
+                # Use socket ping instead of HTTP
+                result = await self.server.ping_target(target_ip, target_name)
+                results[target_name] = result
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get("status") == "alive":
-                        print(f"✅ {target_name} at {target_ip} is ALIVE AND KICKING!")
-                        results[target_name] = {"status": "alive", "ip": target_ip}
-                    else:
-                        print(f"⚠️ {target_name} responded but status is not alive: {data}")
-                        results[target_name] = {"status": "unknown", "ip": target_ip}
+                status = result.get("status")
+                if status == "alive":
+                    print(f"✅ {target_name} at {target_ip} is ALIVE AND KICKING!")
+                elif status == "failed":
+                    error = result.get("error", "Unknown error")
+                    print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
                 else:
-                    print(f"⚠️ {target_name} responded with HTTP {response.status_code}")
-                    results[target_name] = {"status": "error", "ip": target_ip}
-                
-                response.close()
+                    print(f"⚠️ {target_name} responded with status: {status}")
                 
             except Exception as e:
-                print(f"💥 {target_name} at {target_ip} failed to respond: {e}")
-                results[target_name] = {"status": "failed", "ip": target_ip}
+                print(f"💥 {target_name} at {target_ip} ping error: {e}")
+                results[target_name] = {"status": "failed", "ip": target_ip, "error": str(e)}
             
             # Allow GUI to stay responsive between pings
             await uasyncio.sleep_ms(100)

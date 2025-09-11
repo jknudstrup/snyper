@@ -8,7 +8,7 @@ import socket
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
-from utils.socket_protocol import SocketMessage
+from utils.socket_protocol import SocketMessage, MessageLineParser
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -50,6 +50,10 @@ class TargetServer:
         self.app = Microdot()
         self.node_id = config.get('node_id', 'target_unknown')
         self.master_url = f"http://{config.server_ip}:{config.port}"
+        
+        # Socket server for new protocol
+        self.socket_server = None
+        
         self._setup_routes()
     
     def _setup_routes(self):
@@ -121,7 +125,7 @@ class TargetServer:
     async def register_with_master_socket(self):
         """Register this target with the master server using socket protocol"""
         master_ip = config.server_ip
-        socket_port = config.port + 1  # Master socket server on port 8081
+        socket_port = config.port
         
         try:
             print(f"🔌 Socket registering with master at {master_ip}:{socket_port}")
@@ -181,6 +185,102 @@ class TargetServer:
             print(f"💥 Socket registration error: {e}")
             return False
 
+    async def start_socket_server(self, host='0.0.0.0', port=config.port):
+        """Start socket server to handle ping and command messages"""
+        print(f"🔌 Starting target socket server on {host}:{port}")
+        try:
+            self.socket_server = await uasyncio.start_server(
+                self._handle_socket_client,
+                host,
+                port
+            )
+            print(f"✅ Target socket server started on port {port}")
+        except Exception as e:
+            print(f"💥 Target socket server failed to start: {e}")
+            raise
+
+    async def _handle_socket_client(self, reader, writer):
+        """Handle incoming socket connections from master"""
+        client_addr = writer.get_extra_info('peername')
+        client_ip = client_addr[0] if client_addr else "unknown"
+        print(f"🔌 Socket connection from {client_ip}")
+        
+        parser = MessageLineParser()
+        
+        try:
+            # Read data from client (master)
+            while True:
+                data = await reader.read(1024)
+                if not data:
+                    break
+                
+                # Parse incoming messages
+                messages = parser.feed(data.decode('utf-8'))
+                
+                for message in messages:
+                    print(f"📥 Received socket command: {message.type} from master")
+                    
+                    # Handle different message types
+                    if message.type == "ping":
+                        await self._handle_ping_command(message, writer)
+                    else:
+                        # Send error for unsupported message types (for now)
+                        error_msg = SocketMessage(
+                            "ERROR",
+                            msg_id=message.id,
+                            target_id=self.node_id,
+                            data={"error": f"Unsupported command: {message.type}"}
+                        )
+                        writer.write(error_msg.to_line().encode('utf-8'))
+                        await writer.drain()
+                
+        except Exception as e:
+            print(f"💥 Socket client error: {e}")
+        finally:
+            print(f"🔌 Closing socket connection from {client_ip}")
+            writer.close()
+            await writer.wait_closed()
+
+    async def _handle_ping_command(self, message, writer):
+        """Handle PING command from master"""
+        print(f"🏓 Processing PING command from master")
+        
+        # ====== TEST CODE - REMOVE AFTER ASYNC DEBUGGING ======
+        # Adding 3-second delay to test UI responsiveness during long operations
+        print(f"🧪 TEST: Simulating 3-second delay on ping response...")
+        await uasyncio.sleep_ms(3000)
+        print(f"🧪 TEST: Delay complete, sending response")
+        # ====== END TEST CODE ======
+        
+        try:
+            # Send PONG response
+            pong_msg = SocketMessage(
+                "PONG",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={
+                    "status": "alive",
+                    "message": "Target reporting for duty!"
+                }
+            )
+            
+            response_line = pong_msg.to_line()
+            print(f"📤 Sending PONG: {response_line.strip()}")
+            writer.write(response_line.encode('utf-8'))
+            await writer.drain()
+            
+        except Exception as e:
+            print(f"💥 Error sending PONG response: {e}")
+            # Send error response
+            error_msg = SocketMessage(
+                "ERROR",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={"error": str(e)}
+            )
+            writer.write(error_msg.to_line().encode('utf-8'))
+            await writer.drain()
+
     async def register_with_master(self):
         """Register this target with the master server (HTTP fallback)"""
         try:
@@ -231,18 +331,34 @@ class TargetServer:
         await connect_to_wifi(config.ssid, config.password)
         
         print(f"🤝 Registering with master server...")
-        # Try socket registration first, fall back to HTTP
+        # Socket-only registration
         socket_success = await self.register_with_master_socket()
         if not socket_success:
-            print(f"🔄 Socket registration failed, trying HTTP fallback...")
-            await self.register_with_master()
+            print(f"💥 Socket registration failed - no HTTP fallback in socket-only mode")
+            raise RuntimeError("Target registration failed")
         
-        print(f"🎯 Target server {self.node_id} starting on {host}:{port}")
+        print(f"🎯 Target server {self.node_id} starting socket-only on {host}:{port}")
+        
+        # Start socket server for incoming commands
+        await self.start_socket_server(host, port)
+        
         try:
-            await self.app.start_server(host=host, port=port, debug=True)
+            # Keep socket server running (no HTTP server)
+            print(f"✅ Target running socket-only mode on port {port}")
+            # Wait indefinitely for socket connections
+            while True:
+                await uasyncio.sleep(1)
         except KeyboardInterrupt:
             print("🛑 Target server received shutdown signal!")
+            # Clean up socket server
+            if self.socket_server:
+                self.socket_server.close()
+                await self.socket_server.wait_closed()
             raise
         except Exception as e:
             print(f"💥 Target server error: {e}")
+            # Clean up socket server
+            if self.socket_server:
+                self.socket_server.close()
+                await self.socket_server.wait_closed()
             raise
