@@ -1,12 +1,12 @@
 # SNYPER Development Guide
 
-**Current Mission**: **Dual Core Exploration** 🚀
+**Current Mission**: **Ready for Integration** 🎯
 
-**Planning Document**: `plans/dual-core-exploration-plan.md`
+**Status**: Dual core exploration complete - ready to merge branch into main
 
 # CAPTAIN'S LOG
 
-**Latest Achievement**: Socket Communication Migration Complete ✅ - Successfully replaced blocking HTTP with true async socket communication, eliminating UI blocking and enabling real-time target communication
+**Latest Achievement**: Dual Core Exploration Complete ❌ - Attempted threading (_thread) and async task parallelization approaches, both failed with device instability; GUI framework coupling remains unavoidable
 
 **Previous Achievement**: Physical Button Memory Leak Eliminated ✅ - Global GPIO handler architecture eliminates memory leaks while preserving physical button functionality
 
@@ -197,6 +197,14 @@ When a plan has been fully implemented, move the plan file to 'plans/done'
 2. **Research alternatives** - Find different approaches in micropython-micro-gui docs
 3. **Question fundamentals** - Wrong abstraction level? Simpler approach exists?
 4. **Try different angle** - Different library feature? Remove complexity instead of adding?
+
+### 4. Failed Experiments
+
+**Dual Core Parallelization (2025-09-11)**:
+- **Threading Approach**: `_thread.start_new_thread()` caused device lockups requiring physical reset
+- **Async Task Control**: Attempted to run `uasyncio` tasks in master.py instead of GUI framework - incompatible with GUI event loop requirements
+- **Root Issue**: micropython-micro-gui framework requires tight coupling - all async operations must be registered via `self.reg_task()` within GUI components
+- **Lesson**: GUI-first architecture is unavoidable constraint, not a design choice - framework controls event loop completely
 
 ## Technical Standards
 
