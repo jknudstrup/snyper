@@ -1,6 +1,6 @@
 # Socket-Based Communication Migration Plan
 
-CURRENT PHASE: 1
+CURRENT PHASE: 2
 
 ## Overview
 
@@ -9,6 +9,45 @@ Convert SNYPER from HTTP-based master/target communication to lightweight socket
 ## Reference Documentation
 
 **MicroPython Socket Docs**: https://docs.micropython.org/en/latest/library/socket.html
+
+## Critical MicroPython Socket Notes
+
+**IMPORTANT LIMITATIONS & GOTCHAS**:
+
+1. **Address Resolution - CRITICAL**:
+   - ❌ **Never use tuple addresses directly** - support varies by port
+   - ✅ **Always use `getaddrinfo()`** for portable applications
+   - ✅ **Resolve domain names first** before connecting
+
+2. **Platform Differences**:
+   - ⚠️ Socket support and constants **vary across MicroPython ports**
+   - ⚠️ Not all ports support same socket options/methods
+   - 🎯 **Test on actual Pico W hardware** - behavior may differ from development
+
+3. **Error Handling**:
+   - ❌ MicroPython raises **`OSError` directly** (not `socket.gaierror`)
+   - ⚠️ **Timeout errors are `OSError`** - not specific timeout exceptions
+   - 🛡️ **Catch `OSError`** for all socket errors
+
+4. **Timeout Handling**:
+   - ❌ **Not every port supports `settimeout()`** method
+   - ✅ **Use `select.poll()`** for more portable timeout handling
+   - ⚠️ **Async sockets**: Use `uasyncio.wait_for()` for timeouts
+
+5. **Data Transfer**:
+   - ❌ **`sendall()` behavior undefined** on non-blocking sockets
+   - ✅ **Use `write()` instead** for consistent behavior
+   - ✅ **Use `read()` for stream interface** (follows "no short reads" policy)
+
+6. **Stream Interface**:
+   - ✅ **Socket objects implement stream interface** directly
+   - ⚠️ **`makefile()` is essentially no-op** in MicroPython
+   - ❌ **Closing makefile() object closes original socket**
+
+7. **Async Considerations**:
+   - ✅ **Use `uasyncio.open_connection()`** instead of raw sockets for async
+   - ⚠️ **No explicit async socket support** in base socket module
+   - 🎯 **Stick to uasyncio high-level functions** for compatibility
 
 ## Current State Analysis
 
@@ -39,7 +78,7 @@ Convert SNYPER from HTTP-based master/target communication to lightweight socket
 
 **Goal**: Define simple, efficient message format for master/target communication
 **Risk Level**: Low
-**Status**: In Progress
+**Status**: COMPLETE ✅
 
 **Message Format Options**:
 
@@ -69,9 +108,15 @@ PONG:req_123:alive\n
 - `ERROR` - Error responses
 
 **Deliverables**:
-- Protocol specification document
-- Message parsing/encoding utilities
-- Error handling strategy
+- ✅ Protocol specification document (in `socket_protocol.py`)
+- ✅ Message parsing/encoding utilities (`SocketMessage`, `MessageLineParser`)
+- ✅ Error handling strategy (JSON parsing errors, message validation)
+
+**Implementation**: 
+- **Chosen Format**: JSON Lines Protocol for human readability and MicroPython compatibility
+- **Created**: `src/utils/socket_protocol.py` with complete message handling
+- **Tested**: Full test suite validates all message types and parsing
+- **Ready**: Protocol ready for Phase 2 implementation
 
 ## Phase 2: Implement Master-Side Socket Client
 
@@ -100,10 +145,16 @@ class MasterSocketClient:
 - Add connection pooling/reuse if needed
 
 **Error Handling**:
-- Connection timeouts
-- Network errors
-- Invalid responses
-- Target unreachable
+- **All socket errors are `OSError`** (not socket-specific exceptions)
+- **Use `uasyncio.wait_for()`** for portable timeout handling
+- **Connection timeouts, network errors, invalid responses**
+- **Target unreachable scenarios**
+
+**MicroPython Compliance**:
+- ✅ **Use `uasyncio.open_connection()`** (not raw sockets)
+- ✅ **Use `getaddrinfo()`** for address resolution
+- ✅ **Use `writer.write()` and `reader.read()`** for data transfer
+- ✅ **Catch `OSError`** for all socket operations
 
 ## Phase 3: Implement Target-Side Socket Server
 
@@ -120,11 +171,18 @@ class TargetSocketServer:
             self.handle_client, host, port)
         
     async def handle_client(self, reader, writer):
-        # Read message
-        # Parse command
-        # Execute action
-        # Send response
+        # Read message using reader.read()
+        # Parse command with MessageLineParser
+        # Execute action via event queue
+        # Send response using writer.write()
+        # Handle OSError for all socket operations
 ```
+
+**MicroPython Compliance**:
+- ✅ **Use `uasyncio.start_server()`** for server creation
+- ✅ **Use `reader.read()` and `writer.write()`** for data transfer
+- ✅ **Catch `OSError`** for all socket operations
+- ✅ **Proper connection cleanup** in finally blocks
 
 **Command Handlers**:
 - Ping handler (instant response)
