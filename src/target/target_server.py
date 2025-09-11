@@ -4,7 +4,7 @@ import uasyncio
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
-from utils.socket_protocol import SocketMessage, MessageLineParser, send_message
+from utils.socket_protocol import SocketMessage, MessageLineParser, send_message, SocketServer
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -39,14 +39,14 @@ async def connect_to_wifi(ssid, password):
         print(f'📡 Connected to {ssid}! IP: {wlan.ifconfig()[0]}')
         return wlan.ifconfig()[0]
 
-class TargetServer:
+class TargetServer(SocketServer):
     """Target server - ready to serve and protect this digital battlefield!"""
     
     def __init__(self):
-        self.node_id = config.get('node_id', 'target_unknown')
+        # Initialize parent SocketServer with port
+        super().__init__(config.port)
         
-        # Socket server for new protocol
-        self.socket_server = None
+        self.node_id = config.get('node_id', 'target_unknown')
     
 
     async def register_with_master_socket(self):
@@ -64,8 +64,8 @@ class TargetServer:
                 data={"client_id": self.node_id}
             )
             
-            # Use generic send_message helper
-            result = await send_message(register_msg, master_ip, socket_port)
+            # Use inherited send_message method
+            result = await self.send_message(register_msg, master_ip, socket_port)
             
             if result["status"] == "failed":
                 print(f"💥 Socket registration error: {result.get('error', 'Unknown error')}")
@@ -90,67 +90,30 @@ class TargetServer:
             print(f"💥 Socket registration error: {e}")
             return False
 
-    async def start_socket_server(self, host='0.0.0.0', port=config.port):
-        """Start socket server to handle ping and command messages"""
-        print(f"🔌 Starting target socket server on {host}:{port}")
-        try:
-            self.socket_server = await uasyncio.start_server(
-                self._handle_socket_client,
-                host,
-                port
-            )
-            print(f"✅ Target socket server started on port {port}")
-        except Exception as e:
-            print(f"💥 Target socket server failed to start: {e}")
-            raise
 
-    async def _handle_socket_client(self, reader, writer):
-        """Handle incoming socket connections from master"""
-        client_addr = writer.get_extra_info('peername')
-        client_ip = client_addr[0] if client_addr else "unknown"
-        print(f"🔌 Socket connection from {client_ip}")
+    async def _handle_message(self, message, client_ip, writer):
+        """Handle individual socket messages from master"""
+        print(f"📥 Target received: {message.type} from master")
         
-        parser = MessageLineParser()
-        
-        try:
-            # Read data from client (master)
-            while True:
-                data = await reader.read(1024)
-                if not data:
-                    break
-                
-                # Parse incoming messages
-                messages = parser.feed(data.decode('utf-8'))
-                
-                for message in messages:
-                    print(f"📥 Received socket command: {message.type} from master")
-                    
-                    # Handle different message types
-                    if message.type == "ping":
-                        await self._handle_ping_command(message, writer)
-                    elif message.type == "stand_up":
-                        await self._handle_stand_up_command(message, writer)
-                    elif message.type == "lay_down":
-                        await self._handle_lay_down_command(message, writer)
-                    elif message.type == "activate":
-                        await self._handle_activate_command(message, writer)
-                    else:
-                        # Send error for unsupported message types
-                        error_msg = SocketMessage(
-                            "ERROR",
-                            msg_id=message.id,
-                            target_id=self.node_id,
-                            data={"error": f"Unsupported command: {message.type}"}
-                        )
-                        writer.write(error_msg.to_line().encode('utf-8'))
-                        await writer.drain()
-                
-        except Exception as e:
-            print(f"💥 Socket client error: {e}")
-        finally:
-            print(f"🔌 Closing socket connection from {client_ip}")
-            writer.close()
-            await writer.wait_closed()
+        # Handle different message types
+        if message.type == "ping":
+            await self._handle_ping_command(message, writer)
+        elif message.type == "stand_up":
+            await self._handle_stand_up_command(message, writer)
+        elif message.type == "lay_down":
+            await self._handle_lay_down_command(message, writer)
+        elif message.type == "activate":
+            await self._handle_activate_command(message, writer)
+        else:
+            # Send error for unsupported message types
+            error_msg = SocketMessage(
+                "ERROR",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={"error": f"Unsupported command: {message.type}"}
+            )
+            writer.write(error_msg.to_line().encode('utf-8'))
+            await writer.drain()
 
     async def _handle_ping_command(self, message, writer):
         """Handle PING command from master"""
@@ -314,7 +277,7 @@ class TargetServer:
         print(f"🎯 Target server {self.node_id} starting socket-only on {host}:{port}")
         
         # Start socket server for incoming commands
-        await self.start_socket_server(host, port)
+        await self.start_socket_server(host)
         
         try:
             # Keep socket server running (no HTTP server)

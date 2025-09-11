@@ -1,25 +1,24 @@
 import uasyncio
 from config.config import config
 from helpers import initialize_access_point
-from utils.socket_protocol import MessageLineParser, SocketMessage, send_message
+from utils.socket_protocol import SocketMessage, SocketServer
 
-class MasterServer:
+class MasterServer(SocketServer):
     """Master server class to handle socket communication - let me tell you something, this is gonna be AWESOME!"""
     
     def __init__(self, on_target_register=None):
+        # Initialize parent SocketServer with port
+        super().__init__(config.port)
+        
         self._ap = None
         
         # Load config values into server
         self.ssid = config.ssid
         self.password = config.password  
         self.server_ip = config.server_ip
-        self.port = config.port
         
         # Callback functions for communicating with controller
         self.on_target_register = on_target_register
-        
-        # Socket server for new protocol
-        self.socket_server = None
     
     async def start_ap(self):
         """Create WiFi Access Point with clean network state"""
@@ -29,61 +28,24 @@ class MasterServer:
         self._ap = await initialize_access_point(self.ssid, self.password, reset=True)
         return self._ap
     
-    async def start_socket_server(self):
-        """Start the socket registration server"""
-        print(f"🔌 Starting socket server on all interfaces:{self.port}")
-        try:
-            self.socket_server = await uasyncio.start_server(
-                self._handle_socket_client,
-                '0.0.0.0',  # Bind to all interfaces, not specific IP
-                self.port
-            )
-            print(f"✅ Socket server started on port {self.port}")
-        except Exception as e:
-            print(f"💥 Socket server failed to start: {e}")
-            raise
     
-    async def _handle_socket_client(self, reader, writer):
-        """Handle incoming socket connections"""
-        client_addr = writer.get_extra_info('peername')
-        client_ip = client_addr[0] if client_addr else "unknown"
-        print(f"🔌 Socket connection from {client_ip}")
+    async def _handle_message(self, message, client_ip, writer):
+        """Handle individual socket messages from clients"""
+        print(f"📥 Master received: {message.type} from {message.target_id}")
         
-        parser = MessageLineParser()
-        
-        try:
-            # Read data from client
-            while True:
-                data = await reader.read(1024)
-                if not data:
-                    break
-                
-                # Parse incoming messages
-                messages = parser.feed(data.decode('utf-8'))
-                
-                for message in messages:
-                    print(f"📥 Received socket message: {message.type} from {message.target_id}")
-                    
-                    # Handle registration messages
-                    if message.type == "register":
-                        await self._handle_socket_registration(message, client_ip, writer)
-                    else:
-                        # Send error for unsupported message types
-                        error_msg = SocketMessage(
-                            "ERROR",
-                            msg_id=message.id,
-                            target_id=message.target_id,
-                            data={"error": f"Unsupported message type: {message.type}"}
-                        )
-                        writer.write(error_msg.to_line().encode('utf-8'))
-                        await writer.drain()
-                
-        except Exception as e:
-            print(f"💥 Socket client error: {e}")
-        finally:
-            print(f"🔌 Closing socket connection from {client_ip}")
-            writer.close()
-            await writer.wait_closed()
+        # Handle registration messages
+        if message.type == "register":
+            await self._handle_socket_registration(message, client_ip, writer)
+        else:
+            # Send error for unsupported message types
+            error_msg = SocketMessage(
+                "ERROR",
+                msg_id=message.id,
+                target_id=message.target_id,
+                data={"error": f"Unsupported message type: {message.type}"}
+            )
+            writer.write(error_msg.to_line().encode('utf-8'))
+            await writer.drain()
     
     async def _handle_socket_registration(self, message, client_ip, writer):
         """Handle socket registration message"""
@@ -123,56 +85,6 @@ class MasterServer:
             writer.write(error_msg.to_line().encode('utf-8'))
             await writer.drain()
 
-    async def _send_command_to_target(self, command_msg, target_ip):
-        """Generic method to send pre-constructed command messages to targets"""
-        target_id = command_msg.target_id
-        command_type = command_msg.type
-        
-        try:
-            print(f"🔌 Socket {command_type.lower()} to {target_id} at {target_ip}:{self.port}")
-            
-            # Connect to target
-            reader, writer = await uasyncio.wait_for(
-                uasyncio.open_connection(target_ip, self.port),
-                timeout=5
-            )
-            
-            try:
-                # Send command message
-                message_line = command_msg.to_line()
-                print(f"📤 Sending {command_type}: {message_line.strip()}")
-                writer.write(message_line.encode('utf-8'))
-                await writer.drain()
-                
-                # Read response
-                response_data = await uasyncio.wait_for(
-                    reader.read(1024),
-                    timeout=5
-                )
-                
-                if not response_data:
-                    return {"status": "failed", "error": "No response", "ip": target_ip}
-                
-                # Parse response
-                response_str = response_data.decode('utf-8').strip()
-                print(f"📥 Received {command_type.lower()} response: {response_str}")
-                
-                response_message = SocketMessage.from_json(response_str)
-                
-                # Return raw response data for caller to process
-                return {
-                    "status": "success",
-                    "ip": target_ip,
-                    "response_message": response_message
-                }
-                    
-            finally:
-                writer.close()
-                await writer.wait_closed()
-                
-        except Exception as e:
-            print(f"💥 Socket {command_type.lower()} error to {target_id}: {e}")
-            return {"status": "failed", "error": str(e), "ip": target_ip}
 
     async def ping_target(self, target_ip, target_id):
         """Ping a specific target using socket communication"""
@@ -184,7 +96,7 @@ class MasterServer:
         )
         
         # Send command and process response
-        result = await send_message(ping_msg, target_ip, self.port)
+        result = await self.send_message(ping_msg, target_ip)
         
         if result["status"] == "failed":
             return result
@@ -214,7 +126,7 @@ class MasterServer:
         )
         
         # Send command and process response
-        result = await send_message(stand_up_msg, target_ip, self.port)
+        result = await self.send_message(stand_up_msg, target_ip)
         
         if result["status"] == "failed":
             return result
@@ -244,7 +156,7 @@ class MasterServer:
         )
         
         # Send command and process response
-        result = await send_message(lay_down_msg, target_ip, self.port)
+        result = await self.send_message(lay_down_msg, target_ip)
         
         if result["status"] == "failed":
             return result
@@ -274,7 +186,7 @@ class MasterServer:
         )
         
         # Send command and process response
-        result = await send_message(activate_msg, target_ip, self.port)
+        result = await self.send_message(activate_msg, target_ip)
         
         if result["status"] == "failed":
             return result

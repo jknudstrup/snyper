@@ -159,7 +159,119 @@ Benefits:
 - Timestamps for debugging and timeout handling
 """
 
-# Generic Socket Communication Function
+# SocketServer Base Class
+
+class SocketServer:
+    """Base class for socket-based servers with common functionality"""
+    
+    def __init__(self, port):
+        self.port = port
+        self.socket_server = None
+    
+    async def send_message(self, command_msg, target_ip, port=None):
+        """Send a message to a target and return parsed response"""
+        if port is None:
+            port = self.port
+            
+        target_id = command_msg.target_id
+        command_type = command_msg.type
+        
+        try:
+            print(f"🔌 Socket {command_type.lower()} to {target_id} at {target_ip}:{port}")
+            
+            # Connect to target
+            reader, writer = await uasyncio.wait_for(
+                uasyncio.open_connection(target_ip, port),
+                timeout=5
+            )
+            
+            try:
+                # Send command message
+                message_line = command_msg.to_line()
+                print(f"📤 Sending {command_type}: {message_line.strip()}")
+                writer.write(message_line.encode('utf-8'))
+                await writer.drain()
+                
+                # Read response
+                response_data = await uasyncio.wait_for(
+                    reader.read(1024),
+                    timeout=5
+                )
+                
+                if not response_data:
+                    return {"status": "failed", "error": "No response", "ip": target_ip}
+                
+                # Parse response
+                response_str = response_data.decode('utf-8').strip()
+                print(f"📥 Received {command_type.lower()} response: {response_str}")
+                
+                response_message = SocketMessage.from_json(response_str)
+                
+                # Return raw response data for caller to process
+                return {
+                    "status": "success",
+                    "ip": target_ip,
+                    "response_message": response_message
+                }
+                    
+            finally:
+                writer.close()
+                await writer.wait_closed()
+                
+        except Exception as e:
+            print(f"💥 Socket {command_type.lower()} error to {target_id}: {e}")
+            return {"status": "failed", "error": str(e), "ip": target_ip}
+    
+    async def start_socket_server(self, host='0.0.0.0'):
+        """Start socket server to handle incoming connections"""
+        print(f"🔌 Starting socket server on {host}:{self.port}")
+        try:
+            self.socket_server = await uasyncio.start_server(
+                self._handle_socket_client,
+                host,
+                self.port
+            )
+            print(f"✅ Socket server started on port {self.port}")
+        except Exception as e:
+            print(f"💥 Socket server failed to start: {e}")
+            raise
+    
+    async def _handle_socket_client(self, reader, writer):
+        """Handle incoming socket connections - delegates to child class"""
+        client_addr = writer.get_extra_info('peername')
+        client_ip = client_addr[0] if client_addr else "unknown"
+        print(f"🔌 Socket connection from {client_ip}")
+        
+        parser = MessageLineParser()
+        
+        try:
+            # Read data from client
+            while True:
+                data = await reader.read(1024)
+                if not data:
+                    break
+                
+                # Parse incoming messages
+                messages = parser.feed(data.decode('utf-8'))
+                
+                for message in messages:
+                    print(f"📥 Received socket message: {message.type}")
+                    
+                    # Delegate to child class for message handling
+                    await self._handle_message(message, client_ip, writer)
+                
+        except Exception as e:
+            print(f"💥 Socket client error: {e}")
+        finally:
+            print(f"🔌 Closing socket connection from {client_ip}")
+            writer.close()
+            await writer.wait_closed()
+    
+    async def _handle_message(self, message, client_ip, writer):
+        """Handle individual messages - must be implemented by child classes"""
+        raise NotImplementedError("Child classes must implement _handle_message()")
+
+# Generic Socket Communication Function (deprecated - use SocketServer.send_message)
 
 async def send_message(command_msg, target_ip, port):
     """Generic function to send pre-constructed command messages to targets via socket"""
