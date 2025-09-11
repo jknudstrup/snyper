@@ -8,7 +8,7 @@ import socket
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
-from utils.socket_protocol import SocketMessage, MESSAGE_TYPES
+from utils.socket_protocol import SocketMessage
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -128,7 +128,7 @@ class TargetServer:
             
             # Create registration message
             register_msg = SocketMessage(
-                MESSAGE_TYPES["REGISTER"],
+                "REGISTER",
                 target_id=self.node_id,
                 data={"client_id": self.node_id}
             )
@@ -162,10 +162,10 @@ class TargetServer:
                 response_message = SocketMessage.from_json(response_str)
                 
                 # Check response
-                if response_message.type == MESSAGE_TYPES["REGISTERED"]:
+                if response_message.type == "registered":
                     print(f"✅ Successfully socket-registered target {self.node_id} with master!")
                     return True
-                elif response_message.type == MESSAGE_TYPES["ERROR"]:
+                elif response_message.type == "error":
                     error_msg = response_message.data.get("error", "Unknown error")
                     print(f"💥 Socket registration error from master: {error_msg}")
                     return False

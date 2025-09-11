@@ -3,11 +3,7 @@ import json
 import uasyncio
 from config.config import config
 from helpers import initialize_access_point
-from utils.socket_protocol import (
-    MessageLineParser, 
-    SocketMessage,
-    MESSAGE_TYPES
-)
+from utils.socket_protocol import MessageLineParser, SocketMessage
 
 class MasterServer:
     """Master server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
@@ -106,12 +102,12 @@ class MasterServer:
                     print(f"📥 Received socket message: {message.type} from {message.target_id}")
                     
                     # Handle registration messages
-                    if message.type == MESSAGE_TYPES["REGISTER"]:
+                    if message.type == "register":
                         await self._handle_socket_registration(message, client_ip, writer)
                     else:
                         # Send error for unsupported message types
                         error_msg = SocketMessage(
-                            MESSAGE_TYPES["ERROR"],
+                            "ERROR",
                             msg_id=message.id,
                             target_id=message.target_id,
                             data={"error": f"Unsupported message type: {message.type}"}
@@ -142,7 +138,7 @@ class MasterServer:
             
             # Send success response
             response = SocketMessage(
-                MESSAGE_TYPES["REGISTERED"],
+                "REGISTERED",
                 msg_id=message.id,
                 target_id=client_id,
                 data={"status": "registered"}
@@ -156,7 +152,7 @@ class MasterServer:
             print(f"💥 Socket registration error: {e}")
             # Send error response
             error_msg = SocketMessage(
-                MESSAGE_TYPES["ERROR"],
+                "ERROR",
                 msg_id=message.id,
                 target_id=client_id,
                 data={"error": str(e)}

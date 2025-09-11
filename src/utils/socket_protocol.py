@@ -6,26 +6,21 @@
 import json
 import time
 
-# Message Types
-MESSAGE_TYPES = {
-    "PING": "ping",
-    "PONG": "pong",
-    "STAND_UP": "stand_up",
-    "STANDING": "standing",
-    "LAY_DOWN": "lay_down",
-    "DOWN": "down",
-    "ACTIVATE": "activate",
-    "ACTIVATED": "activated", 
-    "REGISTER": "register",
-    "REGISTERED": "registered",
-    "ERROR": "error"
-}
-
 class SocketMessage:
     """Represents a socket message in SNYPER protocol"""
     
+    # Message Types (valid message types)
+    TYPES = (
+        "ping", "pong", "stand_up", "standing", "lay_down", "down",
+        "activate", "activated", "register", "registered", "error"
+    )
+    
     def __init__(self, msg_type, msg_id=None, data=None, target_id=None):
-        self.type = msg_type
+        msg_type_lower = msg_type.lower()
+        if msg_type_lower not in self.TYPES:
+            raise ValueError(f"Invalid message type: {msg_type}. Valid types: {self.TYPES}")
+        
+        self.type = msg_type_lower
         self.id = msg_id or self._generate_id()
         self.data = data or {}
         self.target_id = target_id
