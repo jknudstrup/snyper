@@ -4,9 +4,11 @@ import network
 import time
 import urequests
 import uasyncio
+import socket
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
+from utils.socket_protocol import SocketMessage, MESSAGE_TYPES
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""
@@ -116,11 +118,74 @@ class TargetServer:
                 print(f"💥 Activation error: {e}")
                 return Response(json.dumps({"error": str(e)}), status_code=400)
 
+    async def register_with_master_socket(self):
+        """Register this target with the master server using socket protocol"""
+        master_ip = config.server_ip
+        socket_port = config.port + 1  # Master socket server on port 8081
+        
+        try:
+            print(f"🔌 Socket registering with master at {master_ip}:{socket_port}")
+            
+            # Create registration message
+            register_msg = SocketMessage(
+                MESSAGE_TYPES["REGISTER"],
+                target_id=self.node_id,
+                data={"client_id": self.node_id}
+            )
+            
+            # Connect to master socket server
+            reader, writer = await uasyncio.wait_for(
+                uasyncio.open_connection(master_ip, socket_port),
+                timeout=5
+            )
+            
+            try:
+                # Send registration message
+                message_line = register_msg.to_line()
+                print(f"📤 Sending socket registration: {message_line.strip()}")
+                writer.write(message_line.encode('utf-8'))
+                await writer.drain()
+                
+                # Read response
+                response_data = await uasyncio.wait_for(
+                    reader.read(1024),
+                    timeout=5
+                )
+                
+                if not response_data:
+                    raise OSError("Connection closed by master")
+                
+                # Parse response
+                response_str = response_data.decode('utf-8').strip()
+                print(f"📥 Received socket response: {response_str}")
+                
+                response_message = SocketMessage.from_json(response_str)
+                
+                # Check response
+                if response_message.type == MESSAGE_TYPES["REGISTERED"]:
+                    print(f"✅ Successfully socket-registered target {self.node_id} with master!")
+                    return True
+                elif response_message.type == MESSAGE_TYPES["ERROR"]:
+                    error_msg = response_message.data.get("error", "Unknown error")
+                    print(f"💥 Socket registration error from master: {error_msg}")
+                    return False
+                else:
+                    print(f"⚠️ Socket registration unexpected response type: {response_message.type}")
+                    return False
+                    
+            finally:
+                writer.close()
+                await writer.wait_closed()
+                
+        except Exception as e:
+            print(f"💥 Socket registration error: {e}")
+            return False
+
     async def register_with_master(self):
-        """Register this target with the master server"""
+        """Register this target with the master server (HTTP fallback)"""
         try:
             registration_data = {'client_id': self.node_id}
-            print(f"🤝 Registering with master at {self.master_url}/register")
+            print(f"🤝 HTTP Registering with master at {self.master_url}/register")
             
             response = urequests.post(
                 f"{self.master_url}/register",
@@ -166,7 +231,11 @@ class TargetServer:
         await connect_to_wifi(config.ssid, config.password)
         
         print(f"🤝 Registering with master server...")
-        await self.register_with_master()
+        # Try socket registration first, fall back to HTTP
+        socket_success = await self.register_with_master_socket()
+        if not socket_success:
+            print(f"🔄 Socket registration failed, trying HTTP fallback...")
+            await self.register_with_master()
         
         print(f"🎯 Target server {self.node_id} starting on {host}:{port}")
         try:

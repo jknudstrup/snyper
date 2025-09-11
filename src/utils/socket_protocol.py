@@ -7,17 +7,19 @@ import json
 import time
 
 # Message Types
-MSG_PING = "ping"
-MSG_PONG = "pong"
-MSG_STAND_UP = "stand_up"
-MSG_STANDING = "standing"
-MSG_LAY_DOWN = "lay_down"
-MSG_DOWN = "down"
-MSG_ACTIVATE = "activate"
-MSG_ACTIVATED = "activated"
-MSG_REGISTER = "register"
-MSG_REGISTERED = "registered"
-MSG_ERROR = "error"
+MESSAGE_TYPES = {
+    "PING": "ping",
+    "PONG": "pong",
+    "STAND_UP": "stand_up",
+    "STANDING": "standing",
+    "LAY_DOWN": "lay_down",
+    "DOWN": "down",
+    "ACTIVATE": "activate",
+    "ACTIVATED": "activated", 
+    "REGISTER": "register",
+    "REGISTERED": "registered",
+    "ERROR": "error"
+}
 
 class SocketMessage:
     """Represents a socket message in SNYPER protocol"""
@@ -69,89 +71,6 @@ class SocketMessage:
         except (json.JSONDecodeError, KeyError) as e:
             raise ValueError(f"Invalid message format: {e}")
 
-# Protocol Helper Functions
-
-def create_ping_message(target_id=None):
-    """Create a PING message"""
-    return SocketMessage(MSG_PING, target_id=target_id)
-
-def create_pong_message(request_id, target_id, status="alive"):
-    """Create a PONG response message"""
-    return SocketMessage(
-        MSG_PONG, 
-        msg_id=request_id,
-        target_id=target_id,
-        data={"status": status}
-    )
-
-def create_stand_up_message(target_id=None):
-    """Create a STAND_UP command message"""
-    return SocketMessage(MSG_STAND_UP, target_id=target_id)
-
-def create_standing_message(request_id, target_id, status="standing"):
-    """Create a STANDING response message"""
-    return SocketMessage(
-        MSG_STANDING,
-        msg_id=request_id, 
-        target_id=target_id,
-        data={"status": status}
-    )
-
-def create_lay_down_message(target_id=None):
-    """Create a LAY_DOWN command message"""
-    return SocketMessage(MSG_LAY_DOWN, target_id=target_id)
-
-def create_down_message(request_id, target_id, status="down"):
-    """Create a DOWN response message"""
-    return SocketMessage(
-        MSG_DOWN,
-        msg_id=request_id,
-        target_id=target_id, 
-        data={"status": status}
-    )
-
-def create_activate_message(target_id, duration=5):
-    """Create an ACTIVATE command message"""
-    return SocketMessage(
-        MSG_ACTIVATE,
-        target_id=target_id,
-        data={"duration": duration}
-    )
-
-def create_activated_message(request_id, target_id, duration, status="activated"):
-    """Create an ACTIVATED response message"""
-    return SocketMessage(
-        MSG_ACTIVATED,
-        msg_id=request_id,
-        target_id=target_id,
-        data={"status": status, "duration": duration}
-    )
-
-def create_register_message(target_id):
-    """Create a REGISTER message"""
-    return SocketMessage(
-        MSG_REGISTER,
-        target_id=target_id,
-        data={"client_id": target_id}
-    )
-
-def create_registered_message(request_id, target_id, status="registered"):
-    """Create a REGISTERED response message"""
-    return SocketMessage(
-        MSG_REGISTERED,
-        msg_id=request_id,
-        target_id=target_id,
-        data={"status": status}
-    )
-
-def create_error_message(request_id, error_msg, target_id=None):
-    """Create an ERROR response message"""
-    return SocketMessage(
-        MSG_ERROR,
-        msg_id=request_id,
-        target_id=target_id,
-        data={"error": error_msg}
-    )
 
 # Message Line Parser
 
