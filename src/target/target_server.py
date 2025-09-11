@@ -1,10 +1,6 @@
-from microdot import Microdot, Response
-import json
 import network
 import time
-import urequests
 import uasyncio
-import socket
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
@@ -47,80 +43,11 @@ class TargetServer:
     """Target server - ready to serve and protect this digital battlefield!"""
     
     def __init__(self):
-        self.app = Microdot()
         self.node_id = config.get('node_id', 'target_unknown')
-        self.master_url = f"http://{config.server_ip}:{config.port}"
         
         # Socket server for new protocol
         self.socket_server = None
-        
-        self._setup_routes()
     
-    def _setup_routes(self):
-        """Set up all routes - building our target command center!"""
-        
-        @self.app.route('/ping')
-        async def ping(request):
-            """Health check endpoint - still standing strong!"""
-            print(f'Target {self.node_id} was pinged')
-            
-            # ====== TEST CODE - REMOVE AFTER ASYNC DEBUGGING ======
-            # Adding 3-second delay to test UI responsiveness during long operations
-            print(f"🧪 TEST: Simulating 3-second delay on ping response...")
-            await uasyncio.sleep_ms(3000)
-            print(f"🧪 TEST: Delay complete, sending response")
-            # ====== END TEST CODE ======
-            
-            response_data = {
-                "status": "alive", 
-                "target_id": self.node_id,
-                "message": "Target reporting for duty!"
-            }
-            return Response(json.dumps(response_data))
-
-        @self.app.route('/stand_up')
-        async def stand_up(request):
-            """Command target to stand up"""
-            print(f"🎯 Target {self.node_id} received stand_up command")
-            
-            # Emit event to controller
-            await target_event_queue.put(TargetEvent(HTTP_COMMAND_UP))
-            
-            response_data = {"status": "command_queued", "target_id": self.node_id}
-            return Response(json.dumps(response_data))
-
-        @self.app.route('/lay_down')
-        async def lay_down(request):
-            """Command target to lay down"""
-            print(f"🎯 Target {self.node_id} received lay_down command")
-            
-            # Emit event to controller
-            await target_event_queue.put(TargetEvent(HTTP_COMMAND_DOWN))
-            
-            response_data = {"status": "command_queued", "target_id": self.node_id}
-            return Response(json.dumps(response_data))
-
-        @self.app.route('/activate', methods=['POST'])
-        async def activate(request):
-            """Activate target for specified duration"""
-            try:
-                data = request.json
-                duration = data.get('duration', 5)  # Default 5 seconds
-                
-                print(f"🎯 Target {self.node_id} received activate command for {duration} seconds")
-                
-                # Emit event to controller
-                await target_event_queue.put(TargetEvent(HTTP_COMMAND_ACTIVATE, {'duration': duration}))
-                
-                response_data = {
-                    "status": "activation_queued", 
-                    "target_id": self.node_id,
-                    "duration": duration
-                }
-                return Response(json.dumps(response_data))
-            except Exception as e:
-                print(f"💥 Activation error: {e}")
-                return Response(json.dumps({"error": str(e)}), status_code=400)
 
     async def register_with_master_socket(self):
         """Register this target with the master server using socket protocol"""
@@ -227,6 +154,8 @@ class TargetServer:
                         await self._handle_stand_up_command(message, writer)
                     elif message.type == "lay_down":
                         await self._handle_lay_down_command(message, writer)
+                    elif message.type == "activate":
+                        await self._handle_activate_command(message, writer)
                     else:
                         # Send error for unsupported message types
                         error_msg = SocketMessage(
@@ -248,13 +177,6 @@ class TargetServer:
     async def _handle_ping_command(self, message, writer):
         """Handle PING command from master"""
         print(f"🏓 Processing PING command from master")
-        
-        # ====== TEST CODE - REMOVE AFTER ASYNC DEBUGGING ======
-        # Adding 3-second delay to test UI responsiveness during long operations
-        print(f"🧪 TEST: Simulating 3-second delay on ping response...")
-        await uasyncio.sleep_ms(3000)
-        print(f"🧪 TEST: Delay complete, sending response")
-        # ====== END TEST CODE ======
         
         try:
             # Send PONG response
@@ -357,49 +279,47 @@ class TargetServer:
             writer.write(error_msg.to_line().encode('utf-8'))
             await writer.drain()
 
-    async def register_with_master(self):
-        """Register this target with the master server (HTTP fallback)"""
+    async def _handle_activate_command(self, message, writer):
+        """Handle ACTIVATE command from master"""
+        print(f"⚡ Processing ACTIVATE command from master")
+        
         try:
-            registration_data = {'client_id': self.node_id}
-            print(f"🤝 HTTP Registering with master at {self.master_url}/register")
+            # Extract duration from message data
+            duration = message.data.get("duration", 5)  # Default 5 seconds
+            print(f"🎯 Target {self.node_id} received activate command for {duration} seconds")
             
-            response = urequests.post(
-                f"{self.master_url}/register",
-                headers={'Content-Type': 'application/json'},
-                data=json.dumps(registration_data)
+            # Emit event to controller (same as HTTP route)
+            await target_event_queue.put(TargetEvent(HTTP_COMMAND_ACTIVATE, {'duration': duration}))
+            
+            # Send ACTIVATED response
+            activated_msg = SocketMessage(
+                "ACTIVATED",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={
+                    "status": "activation_queued",
+                    "duration": duration,
+                    "message": "Activation command queued"
+                }
             )
             
-            if response.status_code == 200:
-                print(f"✅ Successfully registered target {self.node_id} with master!")
-            else:
-                print(f"⚠️  Registration failed: {response.status_code}")
+            response_line = activated_msg.to_line()
+            print(f"📤 Sending ACTIVATED: {response_line.strip()}")
+            writer.write(response_line.encode('utf-8'))
+            await writer.drain()
             
-            response.close()
         except Exception as e:
-            print(f"💥 Registration error: {e}")
+            print(f"💥 Error processing ACTIVATE command: {e}")
+            # Send error response
+            error_msg = SocketMessage(
+                "ERROR",
+                msg_id=message.id,
+                target_id=self.node_id,
+                data={"error": str(e)}
+            )
+            writer.write(error_msg.to_line().encode('utf-8'))
+            await writer.drain()
 
-    async def report_result(self, hit_value):
-        """Report a target hit to the master server"""
-        try:
-            hit_data = {
-                'target_id': self.node_id,
-                'hit_value': hit_value
-            }
-            
-            response = urequests.post(
-                f"{self.master_url}/target_hit",
-                headers={'Content-Type': 'application/json'},
-                data=json.dumps(hit_data)
-            )
-            
-            if response.status_code == 200:
-                print(f"💥 Hit reported successfully! Value: {hit_value}")
-            else:
-                print(f"⚠️  Hit report failed: {response.status_code}")
-            
-            response.close()
-        except Exception as e:
-            print(f"💥 Hit reporting error: {e}")
 
     async def start_server(self, host='0.0.0.0', port=config.port):
         """Start the target server - time to get this party started!"""

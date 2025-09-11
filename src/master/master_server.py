@@ -1,15 +1,12 @@
-from microdot import Microdot, Response
-import json
 import uasyncio
 from config.config import config
 from helpers import initialize_access_point
 from utils.socket_protocol import MessageLineParser, SocketMessage
 
 class MasterServer:
-    """Master server class to handle HTTP requests - let me tell you something, this is gonna be AWESOME!"""
+    """Master server class to handle socket communication - let me tell you something, this is gonna be AWESOME!"""
     
     def __init__(self, on_target_register=None):
-        self.app = Microdot()
         self._ap = None
         
         # Load config values into server
@@ -23,8 +20,6 @@ class MasterServer:
         
         # Socket server for new protocol
         self.socket_server = None
-        
-        self._setup_routes()
     
     async def start_ap(self):
         """Create WiFi Access Point with clean network state"""
@@ -34,37 +29,6 @@ class MasterServer:
         self._ap = await initialize_access_point(self.ssid, self.password, reset=True)
         return self._ap
     
-    def _setup_routes(self):
-        """Set up all the routes - building our wrestling federation!"""
-        
-        @self.app.route('/')
-        async def index(request):
-            """Root endpoint - let the clients know we're ready to rumble!"""
-            response_data = {"status": "ready", "game": "carnival_shooter"}
-            return Response(json.dumps(response_data))
-
-        @self.app.route('/register', methods=['POST'])
-        async def register_client(request):
-            """Register a new target client - NOW WITH IP TRACKING!"""
-            print(f"📡 RECEIVED REGISTRATION REQUEST from {request.client_addr}")
-            
-            client_data = request.json
-            client_id = client_data.get('client_id', 'unknown')
-            client_ip = request.client_addr[0]  # GRAB THAT IP!
-            
-            print(f"🎯 Processing registration: {client_id} at {client_ip}")
-            
-            # Call controller through callback
-            if self.on_target_register:
-                self.on_target_register(client_id, client_ip)
-                print(f"✅ Registration callback completed for {client_id}")
-            else:
-                print(f"🤝 Target {client_id} at {client_ip} wants to register (no callback registered)")
-            
-            response_data = {"status": "registered", "client_id": client_id}
-            return Response(json.dumps(response_data))
-
-
     async def start_socket_server(self):
         """Start the socket registration server"""
         print(f"🔌 Starting socket server on all interfaces:{self.port}")
@@ -230,6 +194,67 @@ class MasterServer:
     async def lower_target(self, target_ip, target_id):
         """Send lay_down command to a specific target using socket communication"""
         return await self._send_command_to_target(target_ip, target_id, "LAY_DOWN", "down")
+
+    async def activate_target(self, target_ip, target_id, duration=5):
+        """Send activate command to a specific target using socket communication"""
+        # Override the generic method to include duration data
+        try:
+            print(f"🔌 Socket activate to {target_id} at {target_ip}:{self.port}")
+            
+            # Create activate message with duration data
+            activate_msg = SocketMessage(
+                "ACTIVATE",
+                target_id=target_id,
+                data={"from": "master", "duration": duration}
+            )
+            
+            # Connect to target
+            reader, writer = await uasyncio.wait_for(
+                uasyncio.open_connection(target_ip, self.port),
+                timeout=5
+            )
+            
+            try:
+                # Send activate message
+                message_line = activate_msg.to_line()
+                print(f"📤 Sending ACTIVATE: {message_line.strip()}")
+                writer.write(message_line.encode('utf-8'))
+                await writer.drain()
+                
+                # Read response
+                response_data = await uasyncio.wait_for(
+                    reader.read(1024),
+                    timeout=5
+                )
+                
+                if not response_data:
+                    return {"status": "failed", "error": "No response"}
+                
+                # Parse response
+                response_str = response_data.decode('utf-8').strip()
+                print(f"📥 Received activate response: {response_str}")
+                
+                response_message = SocketMessage.from_json(response_str)
+                
+                if response_message.type == "activated":
+                    status = response_message.data.get("status", "unknown")
+                    print(f"✅ {target_id} responded with ACTIVATED: {status}")
+                    return {"status": status, "ip": target_ip, "duration": duration}
+                elif response_message.type == "error":
+                    error_msg = response_message.data.get("error", "Unknown error")
+                    print(f"💥 {target_id} responded with error: {error_msg}")
+                    return {"status": "error", "error": error_msg, "ip": target_ip}
+                else:
+                    print(f"⚠️ {target_id} unexpected response type: {response_message.type}")
+                    return {"status": "unknown", "response_type": response_message.type, "ip": target_ip}
+                    
+            finally:
+                writer.close()
+                await writer.wait_closed()
+                
+        except Exception as e:
+            print(f"💥 Socket activate error to {target_id}: {e}")
+            return {"status": "failed", "error": str(e), "ip": target_ip}
 
     async def start_server(self, debug=True):
         """Start socket-only server"""

@@ -179,6 +179,59 @@ class MasterController:
         
         return results
     
+    async def activate_all(self, duration=5):
+        """Send activate command to all registered targets"""
+        if not self.targets:
+            print("⚠️ No targets registered to activate")
+            return {}
+        
+        print(f"🚀 Socket sending ACTIVATE command to {len(self.targets)} targets for {duration} seconds...")
+        
+        # Create activate tasks with duration parameter
+        tasks = []
+        target_names = []
+        
+        for target_name, target_info in self.targets.items():
+            target_ip = target_info["ip"]
+            # Create task with duration parameter
+            task = self.server.activate_target(target_ip, target_name, duration)
+            tasks.append(task)
+            target_names.append(target_name)
+        
+        # Execute all tasks concurrently
+        results = await uasyncio.gather(*tasks, return_exceptions=True)
+        
+        # Build results dictionary
+        final_results = {}
+        for target_name, result in zip(target_names, results):
+            if isinstance(result, Exception):
+                # Handle exceptions from failed tasks
+                final_results[target_name] = {
+                    "status": "failed", 
+                    "ip": self.targets[target_name]["ip"],
+                    "error": str(result)
+                }
+            else:
+                # Use the result from successful task
+                final_results[target_name] = result
+        
+        # Process results for logging
+        for target_name, result in final_results.items():
+            target_ip = self.targets[target_name]["ip"]
+            status = result.get("status")
+            
+            if status == "activated":
+                print(f"✅ {target_name} is now ACTIVATED for {duration} seconds!")
+            elif status == "activation_queued":
+                print(f"✅ {target_name} received ACTIVATE command - processing...")
+            elif status == "failed":
+                error = result.get("error", "Unknown error")
+                print(f"💥 {target_name} at {target_ip} failed to respond: {error}")
+            else:
+                print(f"⚠️ {target_name} responded with status: {status}")
+        
+        return final_results
+    
     async def ping_and_cleanup_targets(self):
         """Ping all targets and remove any that fail to respond"""
         results = await self.ping_targets()
