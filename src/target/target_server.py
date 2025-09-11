@@ -4,7 +4,7 @@ import uasyncio
 from config.config import config
 from helpers import reset_network_interface
 from target.target_events import target_event_queue, TargetEvent, HTTP_COMMAND_UP, HTTP_COMMAND_DOWN, HTTP_COMMAND_ACTIVATE
-from utils.socket_protocol import SocketMessage, MessageLineParser, send_message, SocketServer
+from utils.socket_protocol import SocketMessage, SocketServer
 
 async def connect_to_wifi(ssid, password):
     """Connect to the master's WiFi AP - time to join the network, brother!"""

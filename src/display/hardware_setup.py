@@ -51,10 +51,10 @@ keyA = Pin(15,Pin.IN,Pin.PULL_UP)
 keyB = Pin(17,Pin.IN,Pin.PULL_UP)
 keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
 keyY= Pin(21 ,Pin.IN,Pin.PULL_UP)
-# up = Pin(2,Pin.IN,Pin.PULL_UP)
-# dowm = Pin(18,Pin.IN,Pin.PULL_UP)
-# left = Pin(16,Pin.IN,Pin.PULL_UP)
-# right = Pin(20,Pin.IN,Pin.PULL_UP)
+up = Pin(2,Pin.IN,Pin.PULL_UP)
+down = Pin(18,Pin.IN,Pin.PULL_UP)
+left = Pin(16,Pin.IN,Pin.PULL_UP)
+right = Pin(20,Pin.IN,Pin.PULL_UP)
 # ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 
@@ -63,11 +63,24 @@ from gui.core.ugui import Display
 # You must match the button pins here to what you've connected on your board.
 # The `micropython-micro-gui` library uses a specific button layout.
 # Based on the example, we'll map your existing button pins to the library's expected inputs.
-nxt = Pin(20, Pin.IN, Pin.PULL_UP) # Using your 'right' button for next
-# sel = ctrl
-sel = Pin(21, Pin.IN, Pin.PULL_UP) # Using your 'keyY' button for select
-prev = Pin(16, Pin.IN, Pin.PULL_UP) # Using your 'left' button for previous
-increase = Pin(2, Pin.IN, Pin.PULL_UP) # Using your 'up' button for increase
-decrease = Pin(18, Pin.IN, Pin.PULL_UP) # Using your 'down' button for decrease
+# nxt = Pin(20, Pin.IN, Pin.PULL_UP) # Using your 'right' button for next
+# # sel = ctrl
+# sel = Pin(21, Pin.IN, Pin.PULL_UP) # Using your 'keyY' button for select
+# prev = Pin(16, Pin.IN, Pin.PULL_UP) # Using your 'left' button for previous
+# increase = Pin(2, Pin.IN, Pin.PULL_UP) # Using your 'up' button for increase
+# decrease = Pin(18, Pin.IN, Pin.PULL_UP) # Using your 'down' button for decrease
+
+# sel = keyY
+# nxt = right
+# prev = left
+# increase = up
+# decrease = down
+
+sel = keyY
+nxt = down
+prev = up
+increase = right
+decrease = left
+
 
 display = Display(ssd, nxt, sel, prev, increase, decrease)
