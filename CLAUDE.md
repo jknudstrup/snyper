@@ -20,8 +20,8 @@
 
 ### Architecture
 
-- **Master**: MasterController-driven system with GUI-first design + WiFi AP + HTTP server + ST7789 display (Raspberry Pi Pico W)
-- **Targets**: WiFi clients with lightning-fast ping responses + target control endpoints (Raspberry Pi Pico W)
+- **Master**: MasterController-driven system with GUI-first design + WiFi AP + Socket server + ST7789 display (Raspberry Pi Pico W)
+- **Targets**: WiFi clients with lightning-fast socket responses + target control (Raspberry Pi Pico W)
 - **Controller Pattern**: Single MasterController instance manages all system state and operations
 
 ### Screen Navigation System
@@ -43,8 +43,8 @@
 
 - `master.py` - 🎮 **MAIN ENTRY POINT** (creates MasterController and launches GUI)
 - `master_controller.py` - 🎯 **CONTROLLER CORE** (SystemState, GameState, target management)
-- `master_server.py` - 🌐 HTTP server (uses controller for state management)
-- `target_server.py` - 🎯 Target endpoints with ping responses + control commands
+- `master_server.py` - 🌐 Socket server (uses controller for state management)
+- `target_server.py` - 🎯 Target socket endpoints with ping responses + control commands
 - `utils/helpers.py` - 🔧 Shared utilities (network reset bullshit eliminator)
 
 ### Codebase Navigation Rules

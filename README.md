@@ -6,15 +6,15 @@
 
 The system consists of networked Raspberry Pi Pico W devices:
 
-- **Master Device**: Runs the game controller with ST7789 display, WiFi AP, HTTP server, and game logic
-- **Target Devices**: WiFi clients that control individual targets with fast ping responses and target control endpoints
+- **Master Device**: Runs the game controller with ST7789 display, WiFi AP, socket server, and game logic
+- **Target Devices**: WiFi clients that control individual targets with fast socket responses and target control
 
 ### Key Features
 
 - **GUI-First Architecture**: Built with micropython-micro-gui controlling the main event loop
 - **Multi-Screen Interface**: Navigation hub with New Game, Options, and Debug screens
-- **Network Management**: WiFi access point with HTTP-based target communication
-- **Target Control**: Lightning-fast ping responses and raise/lower target commands
+- **Network Management**: WiFi access point with socket-based target communication
+- **Target Control**: Lightning-fast socket responses and raise/lower target commands
 - **Device Identity System**: Single codebase deployed with different device roles
 
 ## Quick Start
@@ -106,8 +106,8 @@ src/
 ├── master.py              # Main entry point for master device
 ├── target.py              # Main entry point for target device
 ├── master_controller.py   # Controller core with SystemState/GameState
-├── master_server.py       # HTTP server using controller
-├── target_server.py       # Target endpoints with ping/control
+├── master_server.py       # Socket server using controller
+├── target_server.py       # Target socket endpoints with ping/control
 ├── helpers.py             # Shared utilities and network reset
 ├── views/                 # Screen modules (MainScreen, DebugScreen, etc.)
 ├── device_id.json         # Generated device identity (created by scripts)
@@ -182,9 +182,9 @@ PORT_DIR="$MICROPYTHON_DIR/ports/rp2"
 
 ## Network Architecture
 
-- **Master Device**: Creates WiFi access point and HTTP server
+- **Master Device**: Creates WiFi access point and socket server
 - **Target Devices**: Connect to master's WiFi network
-- **Communication**: HTTP requests using microdot library
+- **Communication**: Socket connections for real-time communication
 - **Target Registration**: Automatic discovery and IP tracking
 - **Ping System**: Sub-second response times for real-time control
 
