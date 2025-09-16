@@ -10,6 +10,7 @@
 # when instantiating the frame buffer. The aim is to do this as early as
 # possible before importing other modules.
 
+from gui.core.ugui import Display
 from machine import Pin, SPI
 import gc
 
@@ -58,7 +59,6 @@ right = Pin(20,Pin.IN,Pin.PULL_UP)
 # ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 
-from gui.core.ugui import Display
 
 # You must match the button pins here to what you've connected on your board.
 # The `micropython-micro-gui` library uses a specific button layout.
