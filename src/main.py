@@ -10,22 +10,27 @@ def wait_for_interrupt():
 
     # Monitor bootsel_button for 3 seconds
     start_time = time.ticks_ms()
+    print("Awaiting Interrupt...")
     while time.ticks_diff(time.ticks_ms(), start_time) < 3000:
         if bootsel_button() == 1:
-            # Set node_id to 'disable' in config.json
             import json
-            with open('config/config.json', 'r') as f:
-                config_data = json.load(f)
-            config_data['node_id'] = 'disable'
-            config_data['foo'] = 'bar'
-            with open('config/config_foo.json', 'w') as f:
-                json.dump(config_data, f)
+            try:
+                file_path = 'config/device_id.json'
+                with open(file_path, 'r') as f:
+                    config_data = json.load(f)
+
+                config_data['node_id'] = 'disable'
+
+                with open(file_path, 'w') as f:
+                    json.dump(config_data, f)
+
+            except Exception as e:
+                print(f"❌ JSON Error: {e}")
 
             led.off()
             return True
         time.sleep_ms(10)  # Small delay to prevent busy waiting
 
-    led.off()
     return False
 
 

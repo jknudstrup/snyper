@@ -66,3 +66,20 @@ async def initialize_access_point(ssid, password, reset=False):
 
     print(f"✅ WiFi AP '{ssid}' ACTIVE at {ap.ifconfig()[0]}")
     return ap
+
+def test_write_file(filename):
+    """Test function to write a simple file for debugging file operations
+
+    Args:
+        filename: Base name for the file (without extension)
+
+    Creates a file named '{filename}.txt' containing just the filename as content
+    """
+    try:
+        with open(f'{filename}.txt', 'w') as f:
+            f.write(filename)
+        print(f"✅ Successfully wrote {filename}.txt")
+        return True
+    except Exception as e:
+        print(f"❌ Failed to write {filename}.txt: {e}")
+        return False
