@@ -12,6 +12,15 @@ def wait_for_interrupt():
     start_time = time.ticks_ms()
     while time.ticks_diff(time.ticks_ms(), start_time) < 3000:
         if bootsel_button() == 1:
+            # Set node_id to 'disable' in config.json
+            import json
+            with open('config/config.json', 'r') as f:
+                config_data = json.load(f)
+            config_data['node_id'] = 'disable'
+            config_data['foo'] = 'bar'
+            with open('config/config_foo.json', 'w') as f:
+                json.dump(config_data, f)
+
             led.off()
             return True
         time.sleep_ms(10)  # Small delay to prevent busy waiting
@@ -26,16 +35,20 @@ def main():
         return
     
     should_abort = wait_for_interrupt()
-    
-    if should_abort:
+    if should_abort: 
+        print('Aborted!')
         return
 
-    elif config.node_id == "master":
+    elif config.node_id == "master": 
+        print('Running Master')
         from master.master import run_master
         run_master()
     else:
+        print('Running Target')
+        from uasyncio import run
         from target.target import run_target
-        run_target()
+        run(run_target())
+        # run_target()
 
 if __name__ == "__main__":
   main()

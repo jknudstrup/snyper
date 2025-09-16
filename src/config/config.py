@@ -101,3 +101,6 @@ class Config:
 
 # Global config instance - the one true champion!
 config = Config()
+
+def print_config():
+    print(config.config)
